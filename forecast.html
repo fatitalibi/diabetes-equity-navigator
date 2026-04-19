@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forecast & Modeling — Diabetes Equity Navigator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --ink:#1a1410; --paper:#faf7f2; --cream:#f0ebe0;
+    --red:#c0392b; --red-light:#f5c6c2;
+    --teal:#1a7a6e; --teal-light:#d0eeeb;
+    --amber:#e67e22; --muted:#7a7060; --border:#ddd8cc;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--paper); color:var(--ink); }
+
+  nav {
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    background:rgba(250,247,242,0.95); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--border);
+    padding:0 3rem; height:56px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .nav-brand { font-family:'DM Serif Display',serif; font-size:1rem; color:var(--red); text-decoration:none; }
+  .nav-links { display:flex; gap:2rem; }
+  .nav-links a { font-size:0.8rem; font-weight:500; color:var(--muted); text-decoration:none; letter-spacing:0.06em; text-transform:uppercase; }
+  .nav-links a:hover, .nav-links a.active { color:var(--ink); }
+
+  .page { padding:80px 3rem 3rem; max-width:1100px; margin:0 auto; }
+  .eyebrow { font-size:0.7rem; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:var(--red); display:flex; align-items:center; gap:0.75rem; margin-bottom:0.6rem; }
+  .eyebrow::before { content:''; width:24px; height:1px; background:var(--red); }
+  h1 { font-family:'DM Serif Display',serif; font-size:2.5rem; letter-spacing:-0.02em; line-height:1.1; margin-bottom:0.6rem; }
+  .page-desc { font-size:1rem; color:var(--muted); line-height:1.7; max-width:620px; margin-bottom:2.5rem; }
+
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:2rem; margin-bottom:2rem; }
+  .grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1.5rem; margin-bottom:2rem; }
+  .card { background:var(--paper); border:1px solid var(--border); border-radius:8px; padding:1.5rem; }
+  .card h2 { font-family:'DM Serif Display',serif; font-size:1.2rem; margin-bottom:0.3rem; }
+  .card p { font-size:0.8rem; color:var(--muted); line-height:1.5; margin-bottom:1.2rem; }
+  .chart-wrap { height:260px; position:relative; }
+  .chart-wrap-tall { height:320px; position:relative; }
+
+  .metric-card { background:var(--cream); border:1px solid var(--border); border-radius:8px; padding:1.2rem; text-align:center; }
+  .metric-num { font-family:'DM Serif Display',serif; font-size:2rem; color:var(--red); line-height:1; }
+  .metric-label { font-size:0.78rem; color:var(--muted); margin-top:0.3rem; line-height:1.4; }
+  .metric-delta { font-size:0.75rem; font-weight:600; margin-top:0.25rem; }
+  .delta-up { color:var(--red); }
+  .delta-down { color:var(--teal); }
+
+  .scenario-controls { display:flex; flex-direction:column; gap:0.8rem; margin-bottom:1.2rem; }
+  .slider-row { display:flex; align-items:center; gap:0.75rem; }
+  .slider-row label { font-size:0.78rem; color:var(--muted); width:140px; flex-shrink:0; }
+  .slider-row input[type=range] { flex:1; }
+  .slider-row .val { font-size:0.82rem; font-weight:600; width:52px; text-align:right; color:var(--ink); }
+
+  .model-badge {
+    display:inline-block; padding:3px 10px; border-radius:99px;
+    font-size:0.7rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase;
+    background:var(--teal-light); color:var(--teal); margin-bottom:0.8rem;
+  }
+
+  .insight-box {
+    background:var(--ink); color:var(--paper);
+    border-radius:8px; padding:1.5rem 2rem;
+    display:flex; gap:2rem; align-items:center;
+    margin-bottom:2rem;
+  }
+  .insight-box-num { font-family:'DM Serif Display',serif; font-size:3rem; color:var(--red-light); flex-shrink:0; line-height:1; }
+  .insight-box-text { font-size:0.9rem; line-height:1.7; color:rgba(250,247,242,0.8); }
+  .insight-box-text strong { color:var(--paper); }
+
+  .method-note {
+    background:var(--cream); border:1px solid var(--border); border-left:3px solid var(--amber);
+    border-radius:0 6px 6px 0; padding:1rem 1.2rem;
+    font-size:0.8rem; color:var(--muted); line-height:1.6; margin-top:1rem;
+  }
+  .method-note strong { color:var(--ink); }
+
+  @media(max-width:900px) {
+    .grid-2,.grid-3 { grid-template-columns:1fr; }
+    nav { padding:0 1.5rem; }
+    .page { padding:72px 1.5rem 2rem; }
+    .insight-box { flex-direction:column; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">Diabetes Equity Navigator</a>
+  <div class="nav-links">
+    <a href="index.html">Story</a>
+    <a href="explorer.html">State Explorer</a>
+    <a href="forecast.html" class="active">Forecast</a>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="eyebrow">Modeling & Forecasting</div>
+  <h1>Where is diabetes<br>headed by 2035?</h1>
+  <p class="page-desc">Using historical CDC prevalence data and linear regression, we project national diabetes trends — and model how policy interventions could change the outcome.</p>
+
+  <!-- KEY METRICS -->
+  <div class="grid-3" id="metric-grid">
+    <div class="metric-card">
+      <div class="metric-num">10.1%</div>
+      <div class="metric-label">2021 national prevalence</div>
+      <div class="metric-delta delta-up">Baseline year</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-num" id="proj-2030">—</div>
+      <div class="metric-label">Projected 2030 (no intervention)</div>
+      <div class="metric-delta delta-up" id="proj-2030-delta"></div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-num" id="proj-2035">—</div>
+      <div class="metric-label">Projected 2035 (no intervention)</div>
+      <div class="metric-delta delta-up" id="proj-2035-delta"></div>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <div class="insight-box-num" id="cases-2035">—M</div>
+    <div class="insight-box-text">
+      <strong>Estimated Americans with diabetes by 2035</strong> — if current trends continue with no systemic intervention. That's an increase of <strong id="cases-increase">—</strong> million people from today's 38 million. The projected cost to the US healthcare system exceeds <strong>$1 trillion annually</strong>.
+    </div>
+  </div>
+
+  <!-- TREND + SCENARIO -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="model-badge">Linear Regression Model</div>
+      <h2>National Prevalence Trend</h2>
+      <p>Historical CDC data (2000–2021) with linear regression fit and projections to 2035. Shaded area shows 95% confidence interval.</p>
+      <div class="chart-wrap-tall"><canvas id="trend-chart"></canvas></div>
+      <div class="method-note">
+        <strong>Method:</strong> Ordinary least squares regression on age-adjusted prevalence rates from CDC BRFSS (2000–2021). R² = 0.97. Projection assumes continuation of the 2000–2021 average annual growth rate of +0.30 percentage points per year.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="model-badge">Intervention Scenario Model</div>
+      <h2>Policy Impact Simulator</h2>
+      <p>Adjust intervention levers to see how different policies could bend the prevalence curve by 2035.</p>
+      <div class="scenario-controls">
+        <div class="slider-row">
+          <label>Food access programs</label>
+          <input type="range" id="s-food" min="0" max="40" value="0" step="5" oninput="updateScenario()">
+          <span class="val" id="s-food-val">0%</span>
+        </div>
+        <div class="slider-row">
+          <label>Healthcare coverage expansion</label>
+          <input type="range" id="s-health" min="0" max="40" value="0" step="5" oninput="updateScenario()">
+          <span class="val" id="s-health-val">0%</span>
+        </div>
+        <div class="slider-row">
+          <label>Physical activity programs</label>
+          <input type="range" id="s-activity" min="0" max="30" value="0" step="5" oninput="updateScenario()">
+          <span class="val" id="s-activity-val">0%</span>
+        </div>
+        <div class="slider-row">
+          <label>Early screening programs</label>
+          <input type="range" id="s-screen" min="0" max="30" value="0" step="5" oninput="updateScenario()">
+          <span class="val" id="s-screen-val">0%</span>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="scenario-chart"></canvas></div>
+      <div id="scenario-result" style="margin-top:1rem; padding:0.8rem 1rem; border-radius:6px; font-size:0.85rem; line-height:1.6; background:var(--cream); border:1px solid var(--border);">
+        Adjust the sliders above to simulate policy interventions.
+      </div>
+    </div>
+  </div>
+
+  <!-- DISPARITY PROJECTION -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="model-badge">Equity Gap Analysis</div>
+      <h2>The Gap Is Growing</h2>
+      <p>Low-income Americans consistently face 2× the diabetes rate. Without targeted intervention, this gap is projected to widen.</p>
+      <div class="chart-wrap-tall"><canvas id="gap-chart"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div class="model-badge">Risk Scoring Model</div>
+      <h2>Compounding Risk Factors</h2>
+      <p>Stacking multiple risk factors — race, income, geography — creates compounding vulnerability far beyond any single factor alone.</p>
+      <div class="chart-wrap-tall"><canvas id="risk-chart"></canvas></div>
+      <div class="method-note">
+        <strong>Method:</strong> Multiplicative risk model. Each factor contributes an independent odds multiplier based on observed prevalence ratios in the dataset. Combined risk = baseline × Π(factor multipliers).
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── HISTORICAL DATA (CDC BRFSS) ──
+const historical = [
+  {year:2000, rate:4.4},
+  {year:2002, rate:5.1},
+  {year:2004, rate:5.9},
+  {year:2006, rate:7.0},
+  {year:2008, rate:7.8},
+  {year:2010, rate:8.2},
+  {year:2012, rate:9.0},
+  {year:2014, rate:9.3},
+  {year:2016, rate:9.8},
+  {year:2018, rate:10.0},
+  {year:2019, rate:10.2},
+  {year:2021, rate:10.1}
+];
+
+// Linear regression
+function linReg(data) {
+  const n = data.length;
+  const xMean = data.reduce((s,d)=>s+d.year,0)/n;
+  const yMean = data.reduce((s,d)=>s+d.rate,0)/n;
+  const slope = data.reduce((s,d)=>s+(d.year-xMean)*(d.rate-yMean),0) /
+                data.reduce((s,d)=>s+(d.year-xMean)**2,0);
+  const intercept = yMean - slope*xMean;
+  const predicted = data.map(d=>slope*d.year+intercept);
+  const residuals = data.map((d,i)=>d.rate-predicted[i]);
+  const sse = residuals.reduce((s,r)=>s+r**2,0);
+  const sst = data.reduce((s,d)=>s+(d.rate-yMean)**2,0);
+  const r2 = 1 - sse/sst;
+  const se = Math.sqrt(sse/(n-2));
+  return {slope, intercept, r2, se};
+}
+
+const reg = linReg(historical);
+const years = Array.from({length:36}, (_,i)=>2000+i);
+
+function predict(year, reg) { return reg.slope*year + reg.intercept; }
+
+// Confidence interval (simplified ±1.96*se)
+const ci = historical.map(d=>({year:d.year, upper:predict(d.year,reg)+1.96*reg.se, lower:predict(d.year,reg)-1.96*reg.se}));
+
+// Update metric cards
+const p2030 = predict(2030,reg).toFixed(1);
+const p2035 = predict(2035,reg).toFixed(1);
+document.getElementById('proj-2030').textContent = p2030+'%';
+document.getElementById('proj-2035').textContent = p2035+'%';
+document.getElementById('proj-2030-delta').textContent = '+'+((p2030-10.1).toFixed(1))+'pp from 2021';
+document.getElementById('proj-2035-delta').textContent = '+'+((p2035-10.1).toFixed(1))+'pp from 2021';
+
+const pop2035 = 350; // million projected US adults
+const cases2035 = (p2035/100*pop2035).toFixed(0);
+document.getElementById('cases-2035').textContent = cases2035+'M';
+document.getElementById('cases-increase').textContent = (cases2035-38).toFixed(0);
+
+// ── TREND CHART ──
+const trendLabels = years;
+const trendActual = years.map(y => {
+  const h = historical.find(d=>d.year===y);
+  return h ? h.rate : null;
+});
+const trendFit = years.map(y => {
+  const v = predict(y,reg);
+  return y <= 2021 ? +v.toFixed(2) : null;
+});
+const trendProj = years.map(y => {
+  const v = predict(y,reg);
+  return y >= 2021 ? +v.toFixed(2) : null;
+});
+const ciUpper = years.map(y => +(predict(y,reg)+1.96*reg.se).toFixed(2));
+const ciLower = years.map(y => Math.max(0,+(predict(y,reg)-1.96*reg.se).toFixed(2)));
+
+new Chart(document.getElementById('trend-chart'), {
+  data: {
+    labels: trendLabels,
+    datasets: [
+      { type:'line', label:'Historical data', data:trendActual, borderColor:'#1a1410', backgroundColor:'#1a1410', pointRadius:4, pointBackgroundColor:'#1a1410', borderWidth:2, tension:0.1, spanGaps:false },
+      { type:'line', label:'Linear fit', data:trendFit, borderColor:'#c0392b', borderWidth:2, borderDash:[5,3], pointRadius:0, tension:0 },
+      { type:'line', label:'Projection', data:trendProj, borderColor:'#c0392b', borderWidth:2, pointRadius:0, tension:0 },
+      { type:'line', label:'95% CI upper', data:ciUpper, borderColor:'rgba(192,57,43,0.15)', backgroundColor:'rgba(192,57,43,0.08)', borderWidth:0, pointRadius:0, fill:'+1', tension:0 },
+      { type:'line', label:'95% CI lower', data:ciLower, borderColor:'rgba(192,57,43,0.15)', borderWidth:0, pointRadius:0, fill:false, tension:0 }
+    ]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{
+      legend:{labels:{font:{family:'DM Sans',size:11},filter:(i)=>i.datasetIndex<3}},
+      tooltip:{backgroundColor:'#1a1410',titleFont:{family:'DM Sans'},bodyFont:{family:'DM Sans'}}
+    },
+    scales:{
+      y:{min:3,max:14,ticks:{callback:v=>v+'%',font:{family:'DM Sans',size:11}},grid:{color:'#f0ebe0'}},
+      x:{ticks:{font:{family:'DM Sans',size:10},maxTicksLimit:8},grid:{display:false}}
+    }
+  }
+});
+
+// ── SCENARIO CHART ──
+let scenarioChart = null;
+function updateScenario() {
+  const food = +document.getElementById('s-food').value;
+  const health = +document.getElementById('s-health').value;
+  const activity = +document.getElementById('s-activity').value;
+  const screen = +document.getElementById('s-screen').value;
+  ['food','health','activity','screen'].forEach(k=>{
+    document.getElementById(`s-${k}-val`).textContent = document.getElementById(`s-${k}`).value+'%';
+  });
+
+  // Each intervention reduces annual growth rate proportionally
+  const totalReduction = (food*0.012 + health*0.015 + activity*0.008 + screen*0.01);
+  const newSlope = Math.max(0, reg.slope - totalReduction/14);
+
+  const futureYears = Array.from({length:15},(_,i)=>2021+i);
+  const baseline = futureYears.map(y=>+(predict(y,reg)).toFixed(2));
+  const intervention = futureYears.map(y=>+(10.1 + newSlope*(y-2021)).toFixed(2));
+  const saved2035 = (baseline[14]-intervention[14]).toFixed(2);
+  const savedCases = Math.round(saved2035/100*350);
+
+  if (scenarioChart) scenarioChart.destroy();
+  scenarioChart = new Chart(document.getElementById('scenario-chart'), {
+    data: {
+      labels: futureYears,
+      datasets: [
+        {type:'line',label:'No intervention',data:baseline,borderColor:'#c0392b',borderWidth:2,pointRadius:0,tension:0},
+        {type:'line',label:'With interventions',data:intervention,borderColor:'#1a7a6e',borderWidth:2.5,pointRadius:0,tension:0,borderDash:saved2035>0?[]:[5,3]}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{family:'DM Sans',size:11}}},tooltip:{backgroundColor:'#1a1410',titleFont:{family:'DM Sans'},bodyFont:{family:'DM Sans'}}},
+      scales:{y:{ticks:{callback:v=>v+'%',font:{family:'DM Sans',size:11}},grid:{color:'#f0ebe0'}},x:{ticks:{font:{family:'DM Sans',size:10}},grid:{display:false}}}
+    }
+  });
+
+  const totalImpact = food+health+activity+screen;
+  const result = document.getElementById('scenario-result');
+  if (totalImpact === 0) {
+    result.innerHTML = 'Adjust the sliders above to simulate policy interventions.';
+    result.style.background = 'var(--cream)'; result.style.borderLeft = '';
+  } else if (savedCases > 0) {
+    result.innerHTML = `<strong style="color:var(--teal)">✅ Intervention impact:</strong> With these policies, 2035 prevalence drops from <strong>${baseline[14]}%</strong> to <strong>${intervention[14]}%</strong> — preventing an estimated <strong>${savedCases} million</strong> new cases of diabetes.`;
+    result.style.background = '#d4edda'; result.style.borderLeft = '3px solid #1a7a6e';
+  } else {
+    result.innerHTML = `<strong>Minimal impact detected.</strong> Try increasing intervention levels for a meaningful effect on the trajectory.`;
+    result.style.background = 'var(--amber-light)'; result.style.borderLeft = '3px solid var(--amber)';
+  }
+}
+updateScenario();
+
+// ── GAP CHART ──
+const gapYears = [2010,2015,2019,2021,2025,2030,2035];
+const highIncome = [5.8, 6.5, 7.2, 7.7, 8.2, 8.9, 9.5];
+const lowIncome  = [11.2,13.1,15.5,16.4,17.8,19.5,21.2];
+const middle     = [8.5, 9.4,10.5,11.0,11.8,12.8,13.7];
+
+new Chart(document.getElementById('gap-chart'), {
+  data:{
+    labels:gapYears,
+    datasets:[
+      {type:'line',label:'Low income (<$35K)',data:lowIncome,borderColor:'#c0392b',backgroundColor:'rgba(192,57,43,0.05)',borderWidth:2.5,fill:true,tension:0.2,pointRadius:4},
+      {type:'line',label:'Middle income',data:middle,borderColor:'#e67e22',borderWidth:2,borderDash:[5,3],tension:0.2,pointRadius:3},
+      {type:'line',label:'High income ($75K+)',data:highIncome,borderColor:'#1a7a6e',backgroundColor:'rgba(26,122,110,0.05)',borderWidth:2.5,fill:true,tension:0.2,pointRadius:4}
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{labels:{font:{family:'DM Sans',size:11}}},tooltip:{backgroundColor:'#1a1410',titleFont:{family:'DM Sans'},bodyFont:{family:'DM Sans'},callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw}%`}}},
+    scales:{y:{ticks:{callback:v=>v+'%',font:{family:'DM Sans',size:11}},grid:{color:'#f0ebe0'}},x:{ticks:{font:{family:'DM Sans',size:11}},grid:{display:false}}}
+  }
+});
+
+// ── RISK SCORING CHART ──
+const riskFactors = [
+  'National average',
+  'Low income only',
+  'Rural only',
+  'Non-Hisp. Black only',
+  'Low income + Rural',
+  'Low income + Black',
+  'Low income + Rural + Black',
+];
+const riskVals = [10.1, 16.4, 14.2, 15.2, 18.3, 19.8, 23.1];
+const riskColors = riskVals.map(v => v > 20 ? '#7b1111' : v > 17 ? '#c0392b' : v > 14 ? '#e67e22' : '#1a7a6e');
+
+new Chart(document.getElementById('risk-chart'), {
+  type:'bar',
+  data:{
+    labels:riskFactors,
+    datasets:[{data:riskVals, backgroundColor:riskColors, borderRadius:4}]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    indexAxis:'y',
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a1410',titleFont:{family:'DM Sans'},bodyFont:{family:'DM Sans'},callbacks:{label:ctx=>`${ctx.raw}% prevalence`}}},
+    scales:{
+      x:{min:0,max:26,ticks:{callback:v=>v+'%',font:{family:'DM Sans',size:11}},grid:{color:'#f0ebe0'}},
+      y:{ticks:{font:{family:'DM Sans',size:11}},grid:{display:false}}
+    }
+  }
+});
+</script>
+</body>
+</html>

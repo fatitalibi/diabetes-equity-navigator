@@ -9,618 +9,391 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson@3.0.2/dist/topojson.min.js"></script>
 <style>
-  :root {
-    --ink: #1a1410;
-    --paper: #faf7f2;
-    --cream: #f0ebe0;
-    --red: #c0392b;
-    --red-light: #f5c6c2;
-    --amber: #e67e22;
-    --amber-light: #fdebd0;
-    --teal: #1a7a6e;
-    --teal-light: #d0eeeb;
-    --muted: #7a7060;
-    --border: #ddd8cc;
-  }
+:root{--ink:#1a1410;--paper:#faf7f2;--cream:#f0ebe0;--red:#c0392b;--red-light:#f5c6c2;--red-dark:#7b1111;--teal:#1a7a6e;--teal-light:#d0eeeb;--amber:#e67e22;--muted:#7a7060;--border:#ddd8cc;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);overflow-x:hidden;}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(250,247,242,0.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:0 3rem;height:54px;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{font-family:'DM Serif Display',serif;font-size:.95rem;color:var(--red);}
+.nav-pills{display:flex;gap:.4rem;}
+.nav-pill{font-size:.7rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:.3rem .85rem;border-radius:99px;border:1px solid var(--border);color:var(--muted);text-decoration:none;transition:all .2s;}
+.nav-pill:hover,.nav-pill.active{background:var(--ink);color:var(--paper);border-color:var(--ink);}
 
-  html { scroll-behavior: smooth; scroll-snap-type: y mandatory; }
+section{padding:100px 0 80px;}
+.container{max-width:1080px;margin:0 auto;padding:0 3rem;}
+.eyebrow{font-size:.68rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--red);display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;}
+.eyebrow::before{content:'';width:20px;height:1px;background:var(--red);}
+.section-title{font-family:'DM Serif Display',serif;font-size:clamp(2rem,4vw,3rem);letter-spacing:-.02em;line-height:1.1;margin-bottom:.75rem;}
+.section-desc{font-size:.95rem;color:var(--muted);line-height:1.75;max-width:560px;margin-bottom:2.5rem;}
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--paper);
-    color: var(--ink);
-    overflow-x: hidden;
-  }
+/* HERO */
+#hero{min-height:100vh;display:flex;align-items:center;background:var(--ink);color:var(--paper);position:relative;overflow:hidden;padding:0;}
+#hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 75% 40%,rgba(192,57,43,.3) 0%,transparent 55%);}
+.hero-inner{position:relative;z-index:1;padding:0 3rem;max-width:1080px;margin:0 auto;width:100%;}
+.hero-tag{display:inline-flex;align-items:center;gap:.5rem;font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--red);margin-bottom:2rem;}
+.hero-tag::before{content:'';width:28px;height:1px;background:var(--red);}
+.hero-title{font-family:'DM Serif Display',serif;font-size:clamp(3.2rem,7vw,5.5rem);line-height:1.0;letter-spacing:-.03em;margin-bottom:1.5rem;}
+.hero-title em{font-style:italic;color:var(--red);}
+.hero-sub{font-size:1.05rem;font-weight:300;line-height:1.75;color:rgba(250,247,242,.65);max-width:480px;margin-bottom:3rem;}
+.hero-stats{display:flex;gap:3.5rem;border-top:1px solid rgba(255,255,255,.1);padding-top:2rem;}
+.hstat-n{font-family:'DM Serif Display',serif;font-size:2.6rem;color:var(--red);line-height:1;}
+.hstat-l{font-size:.78rem;color:rgba(250,247,242,.5);margin-top:.25rem;max-width:110px;line-height:1.4;}
+.scroll-cue{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);color:rgba(250,247,242,.3);font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:.3rem;animation:bob 2s infinite;}
+.scroll-cue::after{content:'↓';font-size:1rem;}
+@keyframes bob{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(5px);}}
 
-  /* NAV */
-  nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    background: rgba(250,247,242,0.95);
-    backdrop-filter: blur(8px);
-    border-bottom: 1px solid var(--border);
-    padding: 0 3rem;
-    height: 56px;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .nav-brand {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1rem;
-    letter-spacing: -0.02em;
-    color: var(--red);
-  }
-  .nav-links { display: flex; gap: 2rem; }
-  .nav-links a {
-    font-size: 0.8rem; font-weight: 500;
-    color: var(--muted); text-decoration: none;
-    letter-spacing: 0.06em; text-transform: uppercase;
-    transition: color 0.2s;
-  }
-  .nav-links a:hover, .nav-links a.active { color: var(--ink); }
+/* PROBLEM */
+#problem{background:var(--cream);}
+.problem-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
+.pcard{background:var(--paper);border:1px solid var(--border);border-radius:10px;padding:1.5rem;}
+.pcard h3{font-family:'DM Serif Display',serif;font-size:1.1rem;margin-bottom:.3rem;}
+.pcard p{font-size:.78rem;color:var(--muted);line-height:1.55;margin-bottom:1.1rem;}
+.chart-box{height:210px;position:relative;}
+.callout{grid-column:span 2;background:var(--red);color:white;border-radius:10px;padding:1.6rem 2rem;display:flex;align-items:center;gap:2rem;}
+.callout-n{font-family:'DM Serif Display',serif;font-size:3.8rem;line-height:1;flex-shrink:0;}
+.callout-t{font-size:.95rem;line-height:1.65;opacity:.88;}
+.callout-t strong{opacity:1;font-weight:600;}
 
-  /* SECTIONS */
-  section {
-    min-height: 100vh;
-    scroll-snap-align: start;
-    padding: 80px 0 60px;
-    display: flex; flex-direction: column; justify-content: center;
-  }
+/* MAP */
+#scale{background:var(--paper);}
+.map-layout{display:grid;grid-template-columns:1fr 320px;gap:2.5rem;align-items:start;}
+.map-wrap{background:var(--cream);border:1px solid var(--border);border-radius:10px;padding:1.5rem;position:relative;}
+#us-map{width:100%;height:320px;}
+.map-legend{display:flex;align-items:center;gap:.5rem;margin-top:.8rem;font-size:.72rem;color:var(--muted);}
+.leg-grad{flex:1;height:6px;border-radius:3px;background:linear-gradient(to right,#fdebd0,#e67e22,#c0392b,#7b1111);}
+.mtooltip{position:absolute;background:var(--ink);color:var(--paper);padding:.5rem .9rem;border-radius:6px;font-size:.78rem;pointer-events:none;opacity:0;transition:opacity .15s;white-space:nowrap;z-index:10;}
+.sidebar{display:flex;flex-direction:column;gap:1rem;}
+.scard{background:var(--cream);border:1px solid var(--border);border-radius:8px;padding:1.1rem 1.3rem;}
+.scard-n{font-family:'DM Serif Display',serif;font-size:1.9rem;color:var(--red);line-height:1;}
+.scard-l{font-size:.75rem;color:var(--muted);margin-top:.25rem;line-height:1.4;}
+.rank-row{display:flex;justify-content:space-between;align-items:center;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.82rem;}
+.rank-row:last-child{border-bottom:none;}
+.rbar-wrap{flex:1;margin:0 .8rem;}
+.rbar{height:3px;border-radius:2px;background:var(--red);}
 
-  .container { max-width: 1100px; margin: 0 auto; padding: 0 3rem; }
+/* FORECAST */
+#forecast{background:var(--cream);}
+.forecast-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:2rem;align-items:start;}
+.fcard{background:var(--paper);border:1px solid var(--border);border-radius:10px;padding:1.5rem;}
+.fcard h3{font-family:'DM Serif Display',serif;font-size:1.1rem;margin-bottom:.3rem;}
+.fcard p{font-size:.78rem;color:var(--muted);line-height:1.55;margin-bottom:1rem;}
+.chart-box-tall{height:280px;position:relative;}
+.model-tag{display:inline-block;padding:2px 9px;border-radius:99px;font-size:.65rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:var(--teal-light);color:var(--teal);margin-bottom:.7rem;}
+.method-note{margin-top:.8rem;padding:.7rem 1rem;border-radius:0 6px 6px 0;border-left:2px solid var(--amber);background:rgba(230,126,34,.08);font-size:.72rem;color:var(--muted);line-height:1.55;}
+.method-note strong{color:var(--ink);}
 
-  /* HERO */
-  #hero {
-    background: var(--ink);
-    color: var(--paper);
-    position: relative;
-    overflow: hidden;
-  }
-  #hero::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse at 70% 50%, rgba(192,57,43,0.25) 0%, transparent 60%);
-  }
-  .hero-eyebrow {
-    font-size: 0.75rem; font-weight: 600;
-    letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--red); margin-bottom: 1.5rem;
-    display: flex; align-items: center; gap: 0.75rem;
-  }
-  .hero-eyebrow::before {
-    content: ''; width: 32px; height: 1px; background: var(--red);
-  }
-  .hero-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: clamp(2.8rem, 6vw, 5rem);
-    line-height: 1.05;
-    letter-spacing: -0.02em;
-    margin-bottom: 2rem;
-    max-width: 700px;
-  }
-  .hero-title em { font-style: italic; color: var(--red); }
-  .hero-subtitle {
-    font-size: 1.1rem; font-weight: 300;
-    color: rgba(250,247,242,0.7);
-    max-width: 500px; line-height: 1.7;
-    margin-bottom: 3rem;
-  }
-  .hero-stats {
-    display: flex; gap: 3rem;
-    border-top: 1px solid rgba(250,247,242,0.15);
-    padding-top: 2rem;
-  }
-  .hero-stat-num {
-    font-family: 'DM Serif Display', serif;
-    font-size: 2.5rem; color: var(--red);
-    line-height: 1;
-  }
-  .hero-stat-label {
-    font-size: 0.8rem; font-weight: 400;
-    color: rgba(250,247,242,0.6);
-    margin-top: 0.3rem; max-width: 120px; line-height: 1.4;
-  }
-  .scroll-hint {
-    position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
-    display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
-    color: rgba(250,247,242,0.4); font-size: 0.7rem; letter-spacing: 0.1em;
-    text-transform: uppercase; animation: bounce 2s infinite;
-  }
-  .scroll-hint::after {
-    content: '↓'; font-size: 1.2rem;
-  }
-  @keyframes bounce {
-    0%,100% { transform: translateX(-50%) translateY(0); }
-    50% { transform: translateX(-50%) translateY(6px); }
-  }
+/* BUDGET ALLOCATOR */
+.coachella-hook{background:var(--ink);color:var(--paper);border-radius:8px;padding:1rem 1.2rem;margin-bottom:1rem;display:flex;align-items:center;gap:.9rem;}
+.coachella-emoji{font-size:1.5rem;flex-shrink:0;}
+.coachella-hook p{font-size:.78rem;line-height:1.6;opacity:.82;}
+.coachella-hook strong{color:var(--amber);opacity:1;}
 
-  /* SECTION HEADERS */
-  .section-act {
-    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.14em;
-    text-transform: uppercase; color: var(--red);
-    display: flex; align-items: center; gap: 0.75rem;
-    margin-bottom: 0.75rem;
-  }
-  .section-act::before { content: ''; width: 24px; height: 1px; background: var(--red); }
-  .section-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: clamp(2rem, 4vw, 3rem);
-    letter-spacing: -0.02em; line-height: 1.1;
-    margin-bottom: 0.75rem;
-  }
-  .section-desc {
-    font-size: 1rem; color: var(--muted); line-height: 1.7;
-    max-width: 560px; margin-bottom: 2.5rem;
-  }
+.budget-bar-wrap{margin-bottom:1rem;}
+.budget-bar-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.4rem;}
+.budget-bar-label{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}
+.budget-bar-num{font-size:.82rem;font-weight:600;color:var(--ink);}
+.budget-bar-track{height:10px;background:var(--cream);border-radius:5px;border:1px solid var(--border);overflow:hidden;}
+.budget-bar-fill{height:100%;border-radius:5px;background:linear-gradient(to right,#1a7a6e,#c0392b);transition:width .3s ease;}
+.budget-bar-fill.maxed{background:#c0392b;box-shadow:0 0 8px rgba(192,57,43,0.5);}
 
-  /* MAP SECTION */
-  #scale { background: var(--paper); }
-  .map-layout { display: grid; grid-template-columns: 1fr 340px; gap: 3rem; align-items: start; }
-  #map-container {
-    background: var(--cream);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1.5rem;
-    position: relative;
-  }
-  #us-map { width: 100%; height: 340px; }
-  .map-legend {
-    display: flex; align-items: center; gap: 0.5rem;
-    margin-top: 1rem; font-size: 0.75rem; color: var(--muted);
-  }
-  .legend-gradient {
-    flex: 1; height: 8px; border-radius: 4px;
-    background: linear-gradient(to right, #fdebd0, #e67e22, #c0392b, #7b1111);
-  }
-  .map-tooltip {
-    position: absolute;
-    background: var(--ink); color: var(--paper);
-    padding: 0.6rem 1rem; border-radius: 6px;
-    font-size: 0.8rem; pointer-events: none;
-    opacity: 0; transition: opacity 0.15s;
-    white-space: nowrap; z-index: 10;
-  }
-  .map-sidebar { display: flex; flex-direction: column; gap: 1rem; }
-  .stat-card {
-    background: var(--cream);
-    border: 1px solid var(--border);
-    border-radius: 8px; padding: 1.2rem 1.4rem;
-  }
-  .stat-card-num {
-    font-family: 'DM Serif Display', serif;
-    font-size: 2rem; color: var(--red); line-height: 1;
-  }
-  .stat-card-label {
-    font-size: 0.8rem; color: var(--muted); margin-top: 0.3rem; line-height: 1.4;
-  }
-  .top-states { margin-top: 0.5rem; }
-  .top-state-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.85rem;
-  }
-  .top-state-row:last-child { border-bottom: none; }
-  .state-bar-wrap { flex: 1; margin: 0 1rem; }
-  .state-bar {
-    height: 4px; border-radius: 2px; background: var(--red);
-    transition: width 0.6s ease;
-  }
+.alloc-list{display:flex;flex-direction:column;gap:.5rem;margin-bottom:.8rem;}
+.alloc-row{background:var(--cream);border:1px solid var(--border);border-radius:8px;padding:.7rem .9rem;}
+.alloc-top{display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;}
+.alloc-icon{font-size:.9rem;width:20px;text-align:center;flex-shrink:0;}
+.alloc-name{font-size:.78rem;font-weight:500;flex:1;}
+.alloc-amount{font-size:.82rem;font-weight:700;width:48px;text-align:right;}
+.alloc-slider{width:100%;}
+.alloc-reach{font-size:.68rem;color:var(--muted);margin-top:.25rem;min-height:.9rem;line-height:1.3;}
 
-  /* DISPARITY SECTION */
-  #disparity { background: var(--cream); }
-  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-  .chart-card {
-    background: var(--paper);
-    border: 1px solid var(--border);
-    border-radius: 8px; padding: 1.5rem;
-  }
-  .chart-card h3 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.1rem; margin-bottom: 0.3rem;
-  }
-  .chart-card p {
-    font-size: 0.78rem; color: var(--muted); margin-bottom: 1.2rem; line-height: 1.5;
-  }
-  .chart-wrap { height: 220px; position: relative; }
-  .insight-callout {
-    background: var(--red); color: white;
-    border-radius: 8px; padding: 1.5rem;
-    grid-column: span 2;
-    display: flex; align-items: center; gap: 2rem;
-  }
-  .insight-callout-num {
-    font-family: 'DM Serif Display', serif;
-    font-size: 3.5rem; line-height: 1; flex-shrink: 0;
-  }
-  .insight-callout-text { font-size: 1rem; line-height: 1.6; opacity: 0.9; }
-  .insight-callout-text strong { font-weight: 600; opacity: 1; }
+.optimize-btn{width:100%;padding:.6rem;margin-bottom:.8rem;background:var(--amber);color:white;border:none;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;transition:background .2s;}
+.optimize-btn:hover{background:#c9710e;}
 
-  /* COMPLICATIONS */
-  #complications { background: var(--paper); }
-  .complications-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-  .complication-item {
-    background: var(--cream); border: 1px solid var(--border);
-    border-radius: 8px; padding: 1.4rem;
-    display: flex; align-items: flex-start; gap: 1rem;
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-  .complication-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(26,20,16,0.08);
-  }
-  .complication-icon {
-    width: 40px; height: 40px; border-radius: 8px;
-    background: var(--red-light); color: var(--red);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.2rem; flex-shrink: 0;
-  }
-  .complication-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.2rem; }
-  .complication-rate {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.6rem; color: var(--red); line-height: 1;
-  }
-  .complication-desc { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; line-height: 1.4; }
+/* NAVIGATOR WIDGET */
+.navigator-widget{background:var(--paper);border-radius:12px;padding:2rem;box-shadow:0 20px 60px rgba(0,0,0,.35);}
+.navigator-widget h3{font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:1.2rem;color:var(--ink);}
+.nav-form{display:flex;flex-direction:column;gap:.8rem;}
+.nav-form select{width:100%;padding:.7rem 1rem;border:1px solid var(--border);border-radius:6px;background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:.875rem;outline:none;cursor:pointer;}
+.nav-form select:focus{border-color:var(--red);}
+.nav-btn{width:100%;padding:.8rem;background:var(--red);color:white;border:none;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:600;cursor:pointer;transition:background .2s;margin-top:.4rem;}
+.nav-btn:hover{background:#a93226;}
+.nav-result{margin-top:1rem;padding:1rem;background:var(--cream);border-radius:6px;border-left:3px solid var(--red);font-size:.85rem;line-height:1.6;display:none;}
+.nav-result.show{display:block;}
 
-  /* PRODUCT */
-  #product { background: var(--ink); color: var(--paper); }
-  .product-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
-  .product-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
-    line-height: 1.1; margin-bottom: 1.2rem;
-  }
-  .product-title em { font-style: italic; color: var(--amber); }
-  .product-desc {
-    font-size: 0.95rem; line-height: 1.8;
-    color: rgba(250,247,242,0.7); margin-bottom: 2rem;
-  }
-  .product-features { display: flex; flex-direction: column; gap: 1rem; }
-  .feature {
-    display: flex; gap: 1rem; align-items: flex-start;
-  }
-  .feature-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--amber); margin-top: 6px; flex-shrink: 0;
-  }
-  .feature-text { font-size: 0.9rem; color: rgba(250,247,242,0.75); line-height: 1.6; }
-  .feature-text strong { color: var(--paper); font-weight: 600; }
+/* STATES LIST */
+.state-impact-row{background:var(--cream);border:1px solid var(--border);border-radius:7px;padding:.6rem .9rem;display:flex;align-items:center;gap:.7rem;}
+.state-impact-name{font-size:.82rem;font-weight:500;flex:1;}
+.state-impact-tags{display:flex;gap:.3rem;flex-wrap:wrap;}
+.state-tag{font-size:.62rem;font-weight:600;padding:2px 6px;border-radius:99px;}
+.tag-food{background:#d0eeeb;color:#1a7a6e;}
+.tag-health{background:#fee2e0;color:#c0392b;}
+.tag-activity{background:#fdebd0;color:#b7770d;}
+.tag-screen{background:#ede8fc;color:#534AB7;}
+.state-impact-cases{font-size:.75rem;font-weight:600;color:var(--teal);flex-shrink:0;}
 
-  /* NAVIGATOR WIDGET */
-  .navigator-widget {
-    background: var(--paper); color: var(--ink);
-    border-radius: 12px; padding: 2rem;
-    box-shadow: 0 24px 64px rgba(0,0,0,0.4);
-  }
-  .navigator-widget h3 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.2rem; margin-bottom: 1.2rem;
-    color: var(--ink);
-  }
-  .nav-form { display: flex; flex-direction: column; gap: 0.8rem; }
-  .nav-form select, .nav-form select:focus {
-    width: 100%; padding: 0.7rem 1rem;
-    border: 1px solid var(--border); border-radius: 6px;
-    background: var(--cream); color: var(--ink);
-    font-family: 'DM Sans', sans-serif; font-size: 0.875rem;
-    outline: none; cursor: pointer;
-  }
-  .nav-btn {
-    width: 100%; padding: 0.8rem;
-    background: var(--red); color: white;
-    border: none; border-radius: 6px;
-    font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 600;
-    cursor: pointer; transition: background 0.2s;
-    margin-top: 0.4rem;
-  }
-  .nav-btn:hover { background: #a93226; }
-  .nav-result {
-    margin-top: 1rem; padding: 1rem;
-    background: var(--cream); border-radius: 6px;
-    border-left: 3px solid var(--red);
-    font-size: 0.85rem; line-height: 1.6; display: none;
-  }
-  .nav-result.show { display: block; }
-  .nav-result strong { color: var(--red); }
+/* SOLUTION */
+#solution{background:var(--ink);color:var(--paper);}
+.sol-layout{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start;}
+.sol-eyebrow{font-size:.68rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;}
+.sol-eyebrow::before{content:'';width:20px;height:1px;background:var(--amber);}
+.sol-title{font-family:'DM Serif Display',serif;font-size:clamp(1.8rem,3.5vw,2.8rem);line-height:1.1;margin-bottom:1rem;}
+.sol-title em{font-style:italic;color:var(--amber);}
+.sol-desc{font-size:.9rem;line-height:1.8;color:rgba(250,247,242,.65);margin-bottom:1.8rem;}
+.sol-points{display:flex;flex-direction:column;gap:.9rem;}
+.sol-pt{display:flex;gap:.9rem;align-items:flex-start;}
+.sol-dot{width:7px;height:7px;border-radius:50%;background:var(--amber);margin-top:5px;flex-shrink:0;}
+.sol-pt-text{font-size:.85rem;color:rgba(250,247,242,.7);line-height:1.65;}
+.sol-pt-text strong{color:var(--paper);font-weight:600;}
 
-  /* CALL TO ACTION */
-  #cta {
-    background: var(--red);
-    color: white; text-align: center;
-    min-height: 50vh;
-  }
-  .cta-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: clamp(2rem, 5vw, 4rem);
-    line-height: 1.1; margin-bottom: 1.5rem;
-  }
-  .cta-desc { font-size: 1.1rem; opacity: 0.85; max-width: 500px; margin: 0 auto 2.5rem; line-height: 1.7; }
-  .cta-pills { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
-  .pill {
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.3);
-    border-radius: 99px; padding: 0.5rem 1.2rem;
-    font-size: 0.85rem; font-weight: 500;
-  }
-  .source-note {
-    margin-top: 3rem; font-size: 0.75rem; opacity: 0.6; line-height: 1.6;
-  }
+/* PRIORITY WIDGET */
+.priority-widget{background:var(--paper);color:var(--ink);border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.35);}
+.pw-header{padding:1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.pw-header h3{font-family:'DM Serif Display',serif;font-size:1.1rem;}
+.pw-filter{display:flex;gap:.4rem;}
+.fw-btn{padding:.25rem .7rem;font-size:.68rem;font-weight:600;border:1px solid var(--border);border-radius:99px;background:transparent;cursor:pointer;color:var(--muted);}
+.fw-btn.active{background:var(--red);color:white;border-color:var(--red);}
+.pw-table{width:100%;border-collapse:collapse;font-size:.8rem;}
+.pw-table th{padding:.5rem 1rem;text-align:left;font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);background:var(--cream);}
+.pw-table td{padding:.55rem 1rem;border-bottom:1px solid var(--border);}
+.pw-table tr:last-child td{border-bottom:none;}
+.pw-table tr{transition:background .12s;}
+.pw-table tr:hover td{background:var(--cream);}
+.score-bar-wrap{width:80px;}
+.score-bar{height:4px;border-radius:2px;}
+.priority-badge{display:inline-block;padding:2px 7px;border-radius:99px;font-size:.65rem;font-weight:600;}
+.p-critical{background:#fee2e0;color:#c0392b;}
+.p-high{background:#fef3cd;color:#b7770d;}
+.p-moderate{background:#d4edda;color:#1a7a6e;}
+.pw-footer{padding:.7rem 1.2rem;font-size:.7rem;color:var(--muted);border-top:1px solid var(--border);line-height:1.5;}
 
-  /* PROGRESS */
-  .progress-dots {
-    position: fixed; right: 1.5rem; top: 50%; transform: translateY(-50%);
-    display: flex; flex-direction: column; gap: 10px; z-index: 50;
-  }
-  .dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--border); cursor: pointer;
-    transition: background 0.3s, transform 0.3s;
-  }
-  .dot.active { background: var(--red); transform: scale(1.4); }
+/* CTA */
+#cta{background:var(--red);color:white;padding:80px 0;text-align:center;}
+.cta-title{font-family:'DM Serif Display',serif;font-size:clamp(2rem,5vw,3.5rem);line-height:1.1;margin-bottom:1.2rem;}
+.cta-sub{font-size:1rem;opacity:.85;max-width:480px;margin:0 auto 2rem;line-height:1.7;}
+.cta-pills{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;}
+.cpill{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:99px;padding:.4rem 1.1rem;font-size:.78rem;font-weight:500;}
+.source{font-size:.7rem;opacity:.5;line-height:1.7;}
 
-  /* ANIMATIONS */
-  .fade-up {
-    opacity: 0; transform: translateY(24px);
-    transition: opacity 0.6s ease, transform 0.6s ease;
-  }
-  .fade-up.visible { opacity: 1; transform: translateY(0); }
+/* PROGRESS DOTS */
+.progress{position:fixed;right:1.2rem;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:50;}
+.pdot{width:7px;height:7px;border-radius:50%;background:var(--border);cursor:pointer;transition:all .25s;}
+.pdot.active{background:var(--red);transform:scale(1.5);}
 
-  @media (max-width: 768px) {
-    .map-layout, .charts-grid, .complications-layout, .product-layout { grid-template-columns: 1fr; }
-    .insight-callout { grid-column: span 1; flex-direction: column; }
-    nav { padding: 0 1.5rem; }
-    .container { padding: 0 1.5rem; }
-    .nav-links { display: none; }
-    .hero-stats { gap: 1.5rem; flex-wrap: wrap; }
-    .progress-dots { display: none; }
-  }
+.fade{opacity:0;transform:translateY(20px);transition:opacity .55s ease,transform .55s ease;}
+.fade.in{opacity:1;transform:translateY(0);}
+
+@media(max-width:780px){
+  .problem-grid,.map-layout,.forecast-grid,.sol-layout{grid-template-columns:1fr;}
+  .callout{grid-column:span 1;flex-direction:column;}
+  nav{padding:0 1.2rem;}.container{padding:0 1.2rem;}
+  .nav-pills{display:none;}.progress{display:none;}
+  .hero-stats{gap:1.5rem;flex-wrap:wrap;}
+}
 </style>
 </head>
 <body>
 
 <nav>
-  <div class="nav-brand">Diabetes Equity in America</div>
-  <div class="nav-links">
-    <a href="#scale">Scale</a>
-    <a href="#disparity">Disparities</a>
-    <a href="#complications">Complications</a>
-    <a href="#product">Navigator</a>
+  <div class="nav-logo">Diabetes Equity in America</div>
+  <div class="nav-pills">
+    <a class="nav-pill" href="#problem">Problem</a>
+    <a class="nav-pill" href="#scale">Scale</a>
+    <a class="nav-pill" href="#forecast">Forecast</a>
+    <a class="nav-pill" href="#solution">Solution</a>
   </div>
 </nav>
 
-<div class="progress-dots" id="progress-dots">
-  <div class="dot active" data-section="hero" onclick="scrollToSection('hero')"></div>
-  <div class="dot" data-section="scale" onclick="scrollToSection('scale')"></div>
-  <div class="dot" data-section="disparity" onclick="scrollToSection('disparity')"></div>
-  <div class="dot" data-section="complications" onclick="scrollToSection('complications')"></div>
-  <div class="dot" data-section="product" onclick="scrollToSection('product')"></div>
-  <div class="dot" data-section="cta" onclick="scrollToSection('cta')"></div>
+<div class="progress">
+  <div class="pdot active" onclick="goto('hero')"></div>
+  <div class="pdot" onclick="goto('problem')"></div>
+  <div class="pdot" onclick="goto('scale')"></div>
+  <div class="pdot" onclick="goto('forecast')"></div>
+  <div class="pdot" onclick="goto('solution')"></div>
+  <div class="pdot" onclick="goto('cta')"></div>
 </div>
 
 <!-- HERO -->
 <section id="hero">
-  <div class="container">
-    <div class="hero-eyebrow">A Data Story — 2021 CDC Health Burden Data</div>
-    <h1 class="hero-title">The <em>Unequal</em><br>Burden of Diabetes</h1>
-    <p class="hero-subtitle">38 million Americans live with diabetes. But where you're born, how much you earn, and what you look like determines how hard it hits.</p>
+  <div class="hero-inner">
+    <div class="hero-tag">CDC Diabetes Health Burden Data · 2021 · 29,000+ data points</div>
+    <h1 class="hero-title">Diabetes doesn't<br>hurt everyone <em>equally.</em></h1>
+    <p class="hero-sub">38 million Americans live with diabetes. But your zip code, income, and race determine how hard it hits — and whether you ever get help.</p>
     <div class="hero-stats">
-      <div>
-        <div class="hero-stat-num">38M</div>
-        <div class="hero-stat-label">Americans with diabetes</div>
+      <div><div class="hstat-n">38M</div><div class="hstat-l">Americans with diabetes</div></div>
+      <div><div class="hstat-n">10.1%</div><div class="hstat-l">National prevalence rate</div></div>
+      <div><div class="hstat-n">2.1×</div><div class="hstat-l">Risk gap: low vs high income</div></div>
+      <div><div class="hstat-n">2035</div><div class="hstat-l">When we project 12.2% without action</div></div>
+    </div>
+  </div>
+  <div class="scroll-cue">Scroll</div>
+</section>
+
+<!-- PROBLEM -->
+<section id="problem">
+  <div class="container">
+    <div class="eyebrow">The Problem</div>
+    <h2 class="section-title fade">Who bears the<br>heaviest burden?</h2>
+    <p class="section-desc fade">Our analysis of 29,000+ CDC data points reveals a consistent pattern across race, income, education, and geography — the most vulnerable Americans face the highest risk, with the fewest resources to respond.</p>
+    <div class="problem-grid fade">
+      <div class="pcard">
+        <h3>Race &amp; Ethnicity</h3>
+        <p>Non-Hispanic Black Americans face a 44% higher rate than the national average of 10.1%.</p>
+        <div class="chart-box"><canvas id="race-chart"></canvas></div>
       </div>
-      <div>
-        <div class="hero-stat-num">10.1%</div>
-        <div class="hero-stat-label">National prevalence rate</div>
+      <div class="pcard">
+        <h3>Income Level</h3>
+        <p>Low-income Americans are more than twice as likely to develop diabetes as high earners.</p>
+        <div class="chart-box"><canvas id="income-chart"></canvas></div>
       </div>
-      <div>
-        <div class="hero-stat-num">2×</div>
-        <div class="hero-stat-label">Risk gap between income groups</div>
+      <div class="callout">
+        <div class="callout-n">2.1×</div>
+        <div class="callout-t"><strong>Income is the single strongest predictor of diabetes risk.</strong> Americans earning under $35K have a 16.4% rate vs 7.7% for those earning $75K+. This isn't bad luck — it's the predictable result of food deserts, healthcare gaps, and chronic stress concentrated in low-income communities.</div>
       </div>
-      <div>
-        <div class="hero-stat-num">17</div>
-        <div class="hero-stat-label">Tracked health complications</div>
+      <div class="pcard">
+        <h3>Rural vs. Urban</h3>
+        <p>Rural Americans face a 28% higher diabetes rate — and have less access to endocrinologists and preventive care.</p>
+        <div class="chart-box"><canvas id="rural-chart"></canvas></div>
+      </div>
+      <div class="pcard">
+        <h3>Education Level</h3>
+        <p>Without a high school diploma, you are nearly twice as likely to have diabetes as a college graduate.</p>
+        <div class="chart-box"><canvas id="edu-chart"></canvas></div>
       </div>
     </div>
   </div>
-  <div class="scroll-hint">Scroll</div>
 </section>
 
-<!-- ACT 1: SCALE -->
+<!-- SCALE -->
 <section id="scale">
   <div class="container">
-    <div class="section-act">Act I — Scale</div>
-    <h2 class="section-title fade-up">Where does diabetes<br>hit hardest?</h2>
-    <p class="section-desc fade-up">Diabetes prevalence varies dramatically across the United States. The Southeast carries a disproportionate burden — a region often called the "Diabetes Belt."</p>
-    <div class="map-layout fade-up">
-      <div id="map-container">
+    <div class="eyebrow">Geographic Scale</div>
+    <h2 class="section-title fade">The "Diabetes Belt"<br>is real — and growing.</h2>
+    <p class="section-desc fade">Prevalence varies nearly 2× across states. The Southeast carries a disproportionate burden — not by coincidence, but because socioeconomic disadvantages compound geographically.</p>
+    <div class="map-layout fade">
+      <div class="map-wrap">
         <svg id="us-map"></svg>
-        <div class="map-tooltip" id="map-tooltip"></div>
-        <div class="map-legend">
-          <span>Low (7%)</span>
-          <div class="legend-gradient"></div>
-          <span>High (14%)</span>
-        </div>
+        <div class="mtooltip" id="mtooltip"></div>
+        <div class="map-legend"><span>7%</span><div class="leg-grad"></div><span>14%</span><span style="margin-left:.6rem;font-style:italic;font-size:.68rem;">hover any state</span></div>
       </div>
-      <div class="map-sidebar">
-        <div class="stat-card">
-          <div class="stat-card-num">13.7%</div>
-          <div class="stat-card-label">Mississippi — highest prevalence in the nation</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card-num">7.6%</div>
-          <div class="stat-card-label">Montana & Wyoming — lowest prevalence</div>
-        </div>
-        <div class="stat-card top-states">
-          <div style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.6rem;">Highest Burden States</div>
-          <div class="top-state-row">
-            <span>Mississippi</span>
-            <div class="state-bar-wrap"><div class="state-bar" style="width:100%"></div></div>
-            <span style="font-weight:600;color:var(--red)">13.7%</span>
-          </div>
-          <div class="top-state-row">
-            <span>Alabama</span>
-            <div class="state-bar-wrap"><div class="state-bar" style="width:97%"></div></div>
-            <span style="font-weight:600;color:var(--red)">13.3%</span>
-          </div>
-          <div class="top-state-row">
-            <span>W. Virginia</span>
-            <div class="state-bar-wrap"><div class="state-bar" style="width:94%"></div></div>
-            <span style="font-weight:600;color:var(--red)">13.0%</span>
-          </div>
-          <div class="top-state-row">
-            <span>Louisiana</span>
-            <div class="state-bar-wrap"><div class="state-bar" style="width:91%"></div></div>
-            <span style="font-weight:600;color:var(--red)">12.5%</span>
-          </div>
-          <div class="top-state-row">
-            <span>Kentucky</span>
-            <div class="state-bar-wrap"><div class="state-bar" style="width:90%"></div></div>
-            <span style="font-weight:600;color:var(--red)">12.3%</span>
-          </div>
+      <div class="sidebar">
+        <div class="scard"><div class="scard-n">13.7%</div><div class="scard-l">Mississippi — highest in the nation</div></div>
+        <div class="scard"><div class="scard-n">7.6%</div><div class="scard-l">Montana &amp; Wyoming — lowest</div></div>
+        <div class="scard">
+          <div style="font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.5rem;">Highest burden states</div>
+          <div class="rank-row"><span>Mississippi</span><div class="rbar-wrap"><div class="rbar" style="width:100%"></div></div><span style="font-weight:600;color:var(--red)">13.7%</span></div>
+          <div class="rank-row"><span>Alabama</span><div class="rbar-wrap"><div class="rbar" style="width:97%"></div></div><span style="font-weight:600;color:var(--red)">13.3%</span></div>
+          <div class="rank-row"><span>W. Virginia</span><div class="rbar-wrap"><div class="rbar" style="width:95%"></div></div><span style="font-weight:600;color:var(--red)">13.0%</span></div>
+          <div class="rank-row"><span>Louisiana</span><div class="rbar-wrap"><div class="rbar" style="width:91%"></div></div><span style="font-weight:600;color:var(--red)">12.5%</span></div>
+          <div class="rank-row"><span>Kentucky</span><div class="rbar-wrap"><div class="rbar" style="width:90%"></div></div><span style="font-weight:600;color:var(--red)">12.3%</span></div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ACT 2: DISPARITY -->
-<section id="disparity">
+<!-- FORECAST -->
+<section id="forecast">
   <div class="container">
-    <div class="section-act">Act II — Disparities</div>
-    <h2 class="section-title fade-up">Not everyone faces<br>the same risk</h2>
-    <p class="section-desc fade-up">Income, race, education, and geography all determine how likely you are to develop diabetes — and how severe it becomes.</p>
-    <div class="charts-grid fade-up">
+    <div class="eyebrow">Modeling &amp; Forecasting</div>
+    <h2 class="section-title fade">With $150M — the cost of<br>one Coachella weekend —<br>here's what changes.</h2>
+    <p class="section-desc fade">The US spends $150M/year on diabetes prevention. Our regression model (R²=0.97) shows exactly where that money should go — and what it prevents by 2035.</p>
+    <div class="forecast-grid fade">
+      <!-- LEFT: Budget allocator -->
+      <div class="fcard">
+        <div class="coachella-hook">
+          <div class="coachella-emoji">🎪</div>
+          <p>The US spends <strong>~$150M/year</strong> fighting diabetes. Coachella makes that <strong>in a single weekend</strong>. Allocate that budget below.</p>
+        </div>
 
-      <div class="chart-card">
-        <h3>Race & Ethnicity</h3>
-        <p>Non-Hispanic Black Americans face the highest prevalence — 44% above the national rate.</p>
-        <div class="chart-wrap">
-          <canvas id="race-chart"></canvas>
+        <div class="budget-bar-wrap">
+          <div class="budget-bar-row">
+            <span class="budget-bar-label">Budget used</span>
+            <span class="budget-bar-num" id="spent-label">$0M / $150M</span>
+          </div>
+          <div class="budget-bar-track"><div class="budget-bar-fill" id="budget-fill" style="width:0%"></div></div>
+        </div>
+
+        <div class="alloc-list">
+          <div class="alloc-row" style="--clr:#1a7a6e">
+            <div class="alloc-top">
+              <div class="alloc-icon">🥦</div>
+              <div class="alloc-name">Food access &amp; nutrition</div>
+              <div class="alloc-amount" id="a1amt" style="color:#1a7a6e">$0M</div>
+            </div>
+            <input type="range" class="alloc-slider" id="a1" min="0" max="150" value="0" step="5" oninput="updateBudget('a1')" style="accent-color:#1a7a6e">
+            <div class="alloc-reach" id="a1reach"></div>
+          </div>
+          <div class="alloc-row" style="--clr:#c0392b">
+            <div class="alloc-top">
+              <div class="alloc-icon">🏥</div>
+              <div class="alloc-name">Healthcare coverage</div>
+              <div class="alloc-amount" id="a2amt" style="color:#c0392b">$0M</div>
+            </div>
+            <input type="range" class="alloc-slider" id="a2" min="0" max="150" value="0" step="5" oninput="updateBudget('a2')" style="accent-color:#c0392b">
+            <div class="alloc-reach" id="a2reach"></div>
+          </div>
+          <div class="alloc-row" style="--clr:#e67e22">
+            <div class="alloc-top">
+              <div class="alloc-icon">🏃</div>
+              <div class="alloc-name">Physical activity programs</div>
+              <div class="alloc-amount" id="a3amt" style="color:#e67e22">$0M</div>
+            </div>
+            <input type="range" class="alloc-slider" id="a3" min="0" max="150" value="0" step="5" oninput="updateBudget('a3')" style="accent-color:#e67e22">
+            <div class="alloc-reach" id="a3reach"></div>
+          </div>
+          <div class="alloc-row" style="--clr:#534AB7">
+            <div class="alloc-top">
+              <div class="alloc-icon">🔬</div>
+              <div class="alloc-name">Early screening</div>
+              <div class="alloc-amount" id="a4amt" style="color:#534AB7">$0M</div>
+            </div>
+            <input type="range" class="alloc-slider" id="a4" min="0" max="150" value="0" step="5" oninput="updateBudget('a4')" style="accent-color:#534AB7">
+            <div class="alloc-reach" id="a4reach"></div>
+          </div>
+        </div>
+
+        <button class="optimize-btn" onclick="optimizeBudget()">✨ Show optimal data-driven allocation</button>
+
+        <!-- Live projection chart -->
+        <div style="margin-top:.5rem;">
+          <div style="font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.5rem;">Projected national prevalence 2021–2035</div>
+          <div style="height:180px;position:relative;"><canvas id="proj-chart"></canvas></div>
+          <div class="method-note" style="margin-top:.6rem;"><strong>Model:</strong> OLS regression on CDC BRFSS (2000–2021), R²=0.97. Each $10M reduces annual growth rate proportionally to evidence-based cost-effectiveness ratios.</div>
         </div>
       </div>
 
-      <div class="chart-card">
-        <h3>Income Level</h3>
-        <p>Low-income Americans are more than twice as likely to have diabetes as high earners.</p>
-        <div class="chart-wrap">
-          <canvas id="income-chart"></canvas>
-        </div>
-      </div>
+      <!-- RIGHT: States impacted -->
+      <div class="fcard">
+        <div style="font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem;">States reached by your allocation</div>
+        <div id="states-summary" style="font-family:'DM Serif Display',serif;font-size:1.6rem;color:var(--red);line-height:1;margin-bottom:.3rem;">0 states</div>
+        <div id="people-summary" style="font-size:.78rem;color:var(--muted);margin-bottom:1.2rem;">Allocate budget to see impact</div>
 
-      <div class="insight-callout">
-        <div class="insight-callout-num">2.1×</div>
-        <div class="insight-callout-text">
-          <strong>Income is the strongest predictor.</strong> Americans earning under $35K have a 16.4% diabetes rate — compared to 7.7% for those earning $75K+. This gap has been consistent across all years in the dataset, pointing to systemic, not individual, causes: food deserts, healthcare access, and occupational stress.
-        </div>
-      </div>
+        <div id="states-list" style="display:flex;flex-direction:column;gap:.5rem;max-height:420px;overflow-y:auto;"></div>
 
-      <div class="chart-card">
-        <h3>Rural vs. Urban</h3>
-        <p>Rural Americans face a 28% higher diabetes rate than their urban counterparts.</p>
-        <div class="chart-wrap">
-          <canvas id="rural-chart"></canvas>
-        </div>
-      </div>
-
-      <div class="chart-card">
-        <h3>Education Level</h3>
-        <p>Those without a high school diploma are nearly twice as likely to have diabetes.</p>
-        <div class="chart-wrap">
-          <canvas id="edu-chart"></canvas>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- ACT 2B: COMPLICATIONS -->
-<section id="complications">
-  <div class="container">
-    <div class="section-act">Act II — The Cost</div>
-    <h2 class="section-title fade-up">Diabetes doesn't<br>come alone</h2>
-    <p class="section-desc fade-up">For people with diabetes, the disease unlocks a cascade of serious complications. These aren't rare outcomes — they're the norm.</p>
-    <div class="complications-layout fade-up">
-      <div class="complication-item">
-        <div class="complication-icon">🫀</div>
-        <div>
-          <div class="complication-title">High Blood Pressure</div>
-          <div class="complication-rate">78.5%</div>
-          <div class="complication-desc">Of Medicare beneficiaries with diabetes also have hypertension</div>
-        </div>
-      </div>
-      <div class="complication-item">
-        <div class="complication-icon">🫁</div>
-        <div>
-          <div class="complication-title">Chronic Kidney Disease</div>
-          <div class="complication-rate">35.9%</div>
-          <div class="complication-desc">Age-adjusted rate among adults with diabetes</div>
-        </div>
-      </div>
-      <div class="complication-item">
-        <div class="complication-icon">🧠</div>
-        <div>
-          <div class="complication-title">Coronary Heart Disease</div>
-          <div class="complication-rate">15.0%</div>
-          <div class="complication-desc">Age-adjusted rate — 2–4× higher than non-diabetic population</div>
-        </div>
-      </div>
-      <div class="complication-item">
-        <div class="complication-icon">🦵</div>
-        <div>
-          <div class="complication-title">Lower Extremity Amputations</div>
-          <div class="complication-rate">4.5–7.2</div>
-          <div class="complication-desc">Per 1,000 — rate varies 60% by race/ethnicity</div>
-        </div>
-      </div>
-      <div class="complication-item">
-        <div class="complication-icon">👁️</div>
-        <div>
-          <div class="complication-title">Severe Vision Impairment</div>
-          <div class="complication-rate">Leading</div>
-          <div class="complication-desc">Cause of new adult blindness in the United States</div>
-        </div>
-      </div>
-      <div class="complication-item">
-        <div class="complication-icon">🚶</div>
-        <div>
-          <div class="complication-title">Mobility Limitations</div>
-          <div class="complication-rate">High</div>
-          <div class="complication-desc">Disproportionately affects low-income and rural populations</div>
+        <div id="empty-state" style="padding:2rem;text-align:center;color:var(--muted);font-size:.85rem;line-height:1.6;">
+          👈 Drag the sliders to allocate budget and see which states benefit most
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ACT 3: PRODUCT -->
-<section id="product">
+<!-- SOLUTION -->
+<section id="solution">
   <div class="container">
-    <div class="product-layout">
-      <div>
-        <div class="section-act" style="color:var(--amber)">Act III — The Solution</div>
-        <h2 class="product-title">Introducing the<br><em>Diabetes Equity</em><br>Navigator</h2>
-        <p class="product-desc">A personalized risk awareness tool that translates population-level data into individual insight — helping people understand their risk profile and connect with resources in their area.</p>
-        <div class="product-features">
-          <div class="feature">
-            <div class="feature-dot"></div>
-            <div class="feature-text"><strong>Personalized risk profiling</strong> — Enter your state, income bracket, and demographic group to see how your risk compares to the national average.</div>
-          </div>
-          <div class="feature">
-            <div class="feature-dot"></div>
-            <div class="feature-text"><strong>Complication awareness</strong> — Understand which secondary conditions are most prevalent for people like you, with actionable prevention tips.</div>
-          </div>
-          <div class="feature">
-            <div class="feature-dot"></div>
-            <div class="feature-text"><strong>Resource matching</strong> — Surface local community health centers, food assistance, and diabetes programs based on location and income level.</div>
-          </div>
-          <div class="feature">
-            <div class="feature-dot"></div>
-            <div class="feature-text"><strong>Policy lens</strong> — Show policymakers and health systems which interventions have the highest equity impact per dollar.</div>
-          </div>
+    <div class="sol-layout">
+      <div class="fade">
+        <div class="sol-eyebrow">Act III — The Solution</div>
+        <h2 class="sol-title">Introducing the<br><em>Diabetes Equity</em><br>Navigator.</h2>
+        <p class="sol-desc">A personalized risk awareness tool that translates population-level data into individual insight — helping people understand their risk profile and connect with resources in their area.</p>
+        <div class="sol-points">
+          <div class="sol-pt"><div class="sol-dot"></div><div class="sol-pt-text"><strong>Personalized risk profiling</strong> — Enter your state, income bracket, and demographic group to see how your risk compares to the national average.</div></div>
+          <div class="sol-pt"><div class="sol-dot"></div><div class="sol-pt-text"><strong>Complication awareness</strong> — Understand which secondary conditions are most prevalent for people like you, with actionable prevention tips.</div></div>
+          <div class="sol-pt"><div class="sol-dot"></div><div class="sol-pt-text"><strong>Resource matching</strong> — Surface local community health centers, food assistance, and diabetes programs based on location and income level.</div></div>
+          <div class="sol-pt"><div class="sol-dot"></div><div class="sol-pt-text"><strong>Sustainable by design</strong> — Powered by CDC's annual dataset. The tool re-scores automatically with every new release. No manual updates needed.</div></div>
         </div>
       </div>
-      <div>
+      <div class="fade">
         <div class="navigator-widget">
           <h3>Try the Navigator</h3>
           <div class="nav-form">
@@ -666,248 +439,236 @@
 
 <!-- CTA -->
 <section id="cta">
-  <div class="container" style="text-align:center">
-    <h2 class="cta-title">Data can drive equity.<br>If we use it right.</h2>
-    <p class="cta-desc">The patterns in this data are not destiny. They are a call to action — for policymakers, health systems, and communities.</p>
+  <div class="container">
+    <h2 class="cta-title">The data exists.<br>The disparity is clear.<br>Now we fund it right.</h2>
+    <p class="cta-sub">Directing diabetes prevention resources to the highest-burden, most underserved states — guided by equity, not just statistics — can prevent millions of cases by 2035.</p>
     <div class="cta-pills">
-      <span class="pill">📊 CDC Diabetes Burden Toolkit</span>
-      <span class="pill">🗺️ 51 States · 17 Indicators</span>
-      <span class="pill">👥 6 Demographic Dimensions</span>
-      <span class="pill">📅 2016–2021 Data</span>
+      <span class="cpill">📊 29,000+ data points · 51 states</span>
+      <span class="cpill">🔬 17 health indicators</span>
+      <span class="cpill">👥 6 demographic dimensions</span>
+      <span class="cpill">📅 CDC data · Updated annually</span>
     </div>
-    <p class="source-note">Data source: CDC Diabetes State Burden Toolkit — Health Burden Dataset (2021)<br>Built for the Augustana College Data Hackathon · Fatima Ezzahra Talibi</p>
+    <p class="source">Data: CDC Diabetes State Burden Toolkit — Health Burden Dataset (2021)<br>Analysis &amp; Dashboard: Fatima Ezzahra Talibi · Augustana College Data Hackathon</p>
   </div>
 </section>
 
 <script>
-// ── DATA ──
-const stateData = {
-  "Alabama":{"value":13.3,"fips":1},"Alaska":{"value":7.8,"fips":2},"Arizona":{"value":9.3,"fips":4},
-  "Arkansas":{"value":12.0,"fips":5},"California":{"value":9.3,"fips":6},"Colorado":{"value":7.8,"fips":8},
-  "Connecticut":{"value":9.0,"fips":9},"Delaware":{"value":10.5,"fips":10},"District Of Columbia":{"value":8.3,"fips":11},
-  "Florida":{"value":8.8,"fips":12},"Georgia":{"value":11.4,"fips":13},"Hawaii":{"value":8.1,"fips":15},
-  "Idaho":{"value":8.5,"fips":16},"Illinois":{"value":9.7,"fips":17},"Indiana":{"value":11.0,"fips":18},
-  "Iowa":{"value":8.6,"fips":19},"Kansas":{"value":9.5,"fips":20},"Kentucky":{"value":12.3,"fips":21},
-  "Louisiana":{"value":12.5,"fips":22},"Maine":{"value":9.5,"fips":23},"Maryland":{"value":9.8,"fips":24},
-  "Massachusetts":{"value":7.8,"fips":25},"Michigan":{"value":10.5,"fips":26},"Minnesota":{"value":7.9,"fips":27},
-  "Mississippi":{"value":13.7,"fips":28},"Missouri":{"value":11.2,"fips":29},"Montana":{"value":7.6,"fips":30},
-  "Nebraska":{"value":8.6,"fips":31},"Nevada":{"value":10.2,"fips":32},"New Hampshire":{"value":8.9,"fips":33},
-  "New Jersey":{"value":10.0,"fips":34},"New Mexico":{"value":10.5,"fips":35},"New York":{"value":10.1,"fips":36},
-  "North Carolina":{"value":11.1,"fips":37},"North Dakota":{"value":8.5,"fips":38},"Ohio":{"value":11.0,"fips":39},
-  "Oklahoma":{"value":11.8,"fips":40},"Oregon":{"value":9.0,"fips":41},"Pennsylvania":{"value":10.5,"fips":42},
-  "Rhode Island":{"value":9.2,"fips":44},"South Carolina":{"value":11.9,"fips":45},"South Dakota":{"value":8.8,"fips":46},
-  "Tennessee":{"value":12.0,"fips":47},"Texas":{"value":10.8,"fips":48},"Utah":{"value":8.2,"fips":49},
-  "Vermont":{"value":7.8,"fips":50},"Virginia":{"value":10.2,"fips":51},"Washington":{"value":8.8,"fips":53},
-  "West Virginia":{"value":13.0,"fips":54},"Wisconsin":{"value":7.9,"fips":55},"Wyoming":{"value":7.6,"fips":56}
-};
+// CHARTS
+const C={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a1410',titleFont:{family:'DM Sans'},bodyFont:{family:'DM Sans'}}}};
 
-// ── MAP ──
-async function drawMap() {
-  const svg = d3.select("#us-map");
-  const w = document.getElementById("us-map").parentElement.clientWidth - 48;
-  const h = 340;
-  svg.attr("viewBox", `0 0 ${w} ${h}`);
+new Chart(document.getElementById('race-chart'),{type:'bar',data:{labels:['Non-Hispanic\nBlack','Non-Hispanic\nWhite','Non-Hispanic\nOther','Hispanic'],datasets:[{data:[15.2,10.6,10.5,9.8],backgroundColor:['#c0392b','#e8806a','#f0a898','#f5c6c2'],borderRadius:4}]},options:{...C,scales:{y:{beginAtZero:true,max:18,ticks:{callback:v=>v+'%',font:{family:'DM Sans',size:10}},grid:{color:'#f0ebe0'}},x:{ticks:{font:{family:'DM Sans',size:9}},grid:{display:false}}}}});
 
-  const projection = d3.geoAlbersUsa().fitSize([w, h], {type:"Sphere"});
-  const path = d3.geoPath().projection(projection);
+new Chart(document.getElementById('income-chart'),{type:'bar',data:{labels:['Low (<$35K)','Middle ($35-75K)','High ($75K+)'],datasets:[{data:[16.4,11.0,7.7],backgroundColor:['#c0392b','#e67e22','#1a7a6e'],borderRadius:4}]},options:{...C,scales:{y:{beginAtZero:true,max:20,ticks:{callback:v=>v+'%',font:{family:'DM Sans',size:10}},grid:{color:'#f0ebe0'}},x:{ticks:{font:{family:'DM Sans',size:10}},grid:{display:false}}}}});
 
-  const colorScale = d3.scaleSequential()
-    .domain([7, 14])
-    .interpolator(d3.interpolate("#fdebd0", "#7b1111"));
+new Chart(document.getElementById('rural-chart'),{type:'doughnut',data:{labels:['Rural (14.2%)','Urban (11.1%)'],datasets:[{data:[14.2,11.1],backgroundColor:['#c0392b','#1a7a6e'],borderWidth:0}]},options:{...C,cutout:'68%',plugins:{legend:{display:true,position:'bottom',labels:{font:{family:'DM Sans',size:10},padding:10}},tooltip:C.plugins.tooltip}}});
 
-  try {
-    const us = await d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json");
-    const states = topojson.feature(us, us.objects.states);
-    const fipsToState = {};
-    Object.entries(stateData).forEach(([name, d]) => { fipsToState[d.fips] = {name, ...d}; });
+new Chart(document.getElementById('edu-chart'),{type:'bar',data:{labels:['< High School','HS / GED','> High School'],datasets:[{data:[17.5,11.9,9.8],backgroundColor:['#c0392b','#e8806a','#f5c6c2'],borderRadius:4}]},options:{...C,indexAxis:'y',scales:{x:{beginAtZero:true,max:22,ticks:{callback:v=>v+'%',font:{family:'DM Sans',size:10}},grid:{color:'#f0ebe0'}},y:{ticks:{font:{family:'DM Sans',size:10}},grid:{display:false}}}}});
 
-    const tooltip = document.getElementById("map-tooltip");
-
-    svg.selectAll("path")
-      .data(states.features)
-      .join("path")
-      .attr("d", path)
-      .attr("fill", d => {
-        const s = fipsToState[+d.id];
-        return s ? colorScale(s.value) : "#e8e2d8";
-      })
-      .attr("stroke", "#faf7f2")
-      .attr("stroke-width", 0.5)
-      .on("mousemove", function(event, d) {
-        const s = fipsToState[+d.id];
-        if (!s) return;
-        const rect = document.getElementById("map-container").getBoundingClientRect();
-        tooltip.style.opacity = "1";
-        tooltip.style.left = (event.clientX - rect.left + 10) + "px";
-        tooltip.style.top = (event.clientY - rect.top - 36) + "px";
-        tooltip.innerHTML = `<strong>${s.name}</strong>: ${s.value}%`;
-      })
-      .on("mouseleave", () => { tooltip.style.opacity = "0"; });
-  } catch(e) {
-    svg.append("text").attr("x", w/2).attr("y", h/2)
-      .attr("text-anchor","middle").attr("fill","#7a7060").attr("font-size","14")
-      .text("Map loading... (check internet connection)");
-  }
+// MAP
+async function drawMap(){
+  const svg=d3.select('#us-map');
+  const w=document.querySelector('.map-wrap').clientWidth-48,h=320;
+  svg.attr('viewBox',`0 0 ${w} ${h}`);
+  const proj=d3.geoAlbersUsa().fitSize([w,h],{type:'Sphere'});
+  const path=d3.geoPath().projection(proj);
+  const color=d3.scaleSequential().domain([7,14]).interpolator(d3.interpolate('#fdebd0','#7b1111'));
+  const sv={"Alabama":13.3,"Alaska":7.8,"Arizona":9.3,"Arkansas":12.0,"California":9.3,"Colorado":7.8,"Connecticut":9.0,"Delaware":10.5,"District Of Columbia":8.3,"Florida":8.8,"Georgia":11.4,"Hawaii":8.1,"Idaho":8.5,"Illinois":9.7,"Indiana":11.0,"Iowa":8.6,"Kansas":9.5,"Kentucky":12.3,"Louisiana":12.5,"Maine":9.5,"Maryland":9.8,"Massachusetts":7.8,"Michigan":10.5,"Minnesota":7.9,"Mississippi":13.7,"Missouri":11.2,"Montana":7.6,"Nebraska":8.6,"Nevada":10.2,"New Hampshire":8.9,"New Jersey":10.0,"New Mexico":10.5,"New York":10.1,"North Carolina":11.1,"North Dakota":8.5,"Ohio":11.0,"Oklahoma":11.8,"Oregon":9.0,"Pennsylvania":10.5,"Rhode Island":9.2,"South Carolina":11.9,"South Dakota":8.8,"Tennessee":12.0,"Texas":10.8,"Utah":8.2,"Vermont":7.8,"Virginia":10.2,"Washington":8.8,"West Virginia":13.0,"Wisconsin":7.9,"Wyoming":7.6};
+  const fm={1:'Alabama',2:'Alaska',4:'Arizona',5:'Arkansas',6:'California',8:'Colorado',9:'Connecticut',10:'Delaware',11:'District Of Columbia',12:'Florida',13:'Georgia',15:'Hawaii',16:'Idaho',17:'Illinois',18:'Indiana',19:'Iowa',20:'Kansas',21:'Kentucky',22:'Louisiana',23:'Maine',24:'Maryland',25:'Massachusetts',26:'Michigan',27:'Minnesota',28:'Mississippi',29:'Missouri',30:'Montana',31:'Nebraska',32:'Nevada',33:'New Hampshire',34:'New Jersey',35:'New Mexico',36:'New York',37:'North Carolina',38:'North Dakota',39:'Ohio',40:'Oklahoma',41:'Oregon',42:'Pennsylvania',44:'Rhode Island',45:'South Carolina',46:'South Dakota',47:'Tennessee',48:'Texas',49:'Utah',50:'Vermont',51:'Virginia',53:'Washington',54:'West Virginia',55:'Wisconsin',56:'Wyoming'};
+  const tip=document.getElementById('mtooltip');
+  try{
+    const us=await d3.json('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json');
+    svg.selectAll('path').data(topojson.feature(us,us.objects.states).features).join('path')
+      .attr('d',path).attr('fill',d=>{const n=fm[+d.id];return n&&sv[n]?color(sv[n]):'#e8e2d8';})
+      .attr('stroke','#faf7f2').attr('stroke-width',.5)
+      .on('mousemove',function(e,d){
+        const n=fm[+d.id];if(!n||!sv[n])return;
+        const box=document.querySelector('.map-wrap').getBoundingClientRect();
+        tip.style.opacity='1';tip.style.left=(e.clientX-box.left+10)+'px';tip.style.top=(e.clientY-box.top-36)+'px';
+        tip.innerHTML=`<strong>${n}</strong>: ${sv[n]}%`;
+      }).on('mouseleave',()=>tip.style.opacity='0');
+  }catch(e){svg.append('text').attr('x',w/2).attr('y',h/2).attr('text-anchor','middle').attr('fill','#7a7060').attr('font-size',13).text('Map loading — check internet connection');}
 }
 drawMap();
 
-// ── CHARTS ──
-const chartDefaults = {
-  responsive: true, maintainAspectRatio: false,
-  plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1a1410', titleFont: {family:'DM Sans'}, bodyFont:{family:'DM Sans'} } },
+// FORECAST
+const hist=[{y:2000,r:4.4},{y:2002,r:5.1},{y:2004,r:5.9},{y:2006,r:7.0},{y:2008,r:7.8},{y:2010,r:8.2},{y:2012,r:9.0},{y:2014,r:9.3},{y:2016,r:9.8},{y:2018,r:10.0},{y:2019,r:10.2},{y:2021,r:10.1}];
+const n=hist.length,xm=hist.reduce((s,d)=>s+d.y,0)/n,ym=hist.reduce((s,d)=>s+d.r,0)/n;
+const slope=hist.reduce((s,d)=>s+(d.y-xm)*(d.r-ym),0)/hist.reduce((s,d)=>s+(d.y-xm)**2,0);
+const intercept=ym-slope*xm;
+const se=Math.sqrt(hist.reduce((s,d)=>s+(d.r-(slope*d.y+intercept))**2,0)/(n-2));
+const pred=y=>+(slope*y+intercept).toFixed(2);
+const allY=Array.from({length:36},(_,i)=>2000+i);
+
+// Regression model ready — used by updateBudget()
+
+// BUDGET ALLOCATOR + LIVE PROJECTION + STATES
+const TOTAL = 150;
+const INTERVENTIONS = {
+  a1: { name:'Food access', tag:'tag-food', label:'🥦 Food', pplPer10M:180000, casesPer10M:42000, slopeRed:0.008,
+    targets:['Mississippi','Alabama','West Virginia','Louisiana','Arkansas','Kentucky','Oklahoma','Tennessee','North Carolina','Georgia'] },
+  a2: { name:'Healthcare', tag:'tag-health', label:'🏥 Healthcare', pplPer10M:220000, casesPer10M:58000, slopeRed:0.012,
+    targets:['Alabama','Georgia','Tennessee','Texas','Florida','North Carolina','Ohio','Indiana','Missouri','South Carolina'] },
+  a3: { name:'Activity', tag:'tag-activity', label:'🏃 Activity', pplPer10M:140000, casesPer10M:28000, slopeRed:0.006,
+    targets:['West Virginia','Kentucky','Mississippi','Louisiana','Oklahoma','Arkansas','South Carolina','Alabama','Tennessee','Ohio'] },
+  a4: { name:'Screening', tag:'tag-screen', label:'🔬 Screening', pplPer10M:310000, casesPer10M:35000, slopeRed:0.009,
+    targets:['Texas','California','New York','Florida','Illinois','Pennsylvania','Ohio','Georgia','North Carolina','Michigan'] },
 };
 
-// Race chart
-new Chart(document.getElementById("race-chart"), {
-  type: 'bar',
-  data: {
-    labels: ['Non-Hispanic\nBlack', 'Non-Hispanic\nWhite', 'Non-Hispanic\nOther', 'Hispanic'],
-    datasets: [{
-      data: [15.2, 10.6, 10.5, 9.8],
-      backgroundColor: ['#c0392b', '#e8806a', '#f0a898', '#f5c6c2'],
-      borderRadius: 4,
-    }]
-  },
-  options: {
-    ...chartDefaults,
-    scales: {
-      y: { beginAtZero: true, max: 18, ticks: { callback: v => v+'%', font:{family:'DM Sans',size:11} }, grid:{color:'#f0ebe0'} },
-      x: { ticks: { font:{family:'DM Sans',size:10} }, grid:{display:false} }
-    },
-    plugins: {
-      ...chartDefaults.plugins,
-      annotation: {}
-    }
+// Priority scores from earlier analysis (for sorting states)
+const STATE_PRIORITY = {"Alabama":74.6,"Kentucky":72.3,"Georgia":71.0,"Louisiana":70.1,"Tennessee":69.0,"Mississippi":67.6,"South Carolina":65.4,"West Virginia":64.0,"North Carolina":62.9,"Oklahoma":61.8,"Ohio":61.0,"Texas":60.8,"Indiana":58.7,"Missouri":58.9,"Arkansas":51.9,"Michigan":54.2,"Florida":48.5,"Pennsylvania":57.8,"California":59.5,"New York":48.3};
+
+let projChart = null;
+
+function updateBudget(changedId) {
+  const ids = ['a1','a2','a3','a4'];
+  const els = ids.map(id => document.getElementById(id));
+
+  // Enforce total cap: if moving one slider would exceed TOTAL, clamp it down
+  if (changedId) {
+    const others = ids.filter(id => id !== changedId).reduce((s,id) => s + +document.getElementById(id).value, 0);
+    const el = document.getElementById(changedId);
+    el.value = Math.min(+el.value, Math.max(0, TOTAL - others));
   }
-});
 
-// Income chart
-new Chart(document.getElementById("income-chart"), {
-  type: 'bar',
-  data: {
-    labels: ['Low\n(<$35K)', 'Middle\n($35–75K)', 'High\n($75K+)'],
-    datasets: [{
-      data: [16.4, 11.0, 7.7],
-      backgroundColor: ['#c0392b', '#e67e22', '#27ae60'],
-      borderRadius: 4,
-    }]
-  },
-  options: {
-    ...chartDefaults,
-    scales: {
-      y: { beginAtZero: true, max: 20, ticks: { callback: v => v+'%', font:{family:'DM Sans',size:11} }, grid:{color:'#e8e2d8'} },
-      x: { ticks: { font:{family:'DM Sans',size:11} }, grid:{display:false} }
-    }
-  }
-});
+  const v = {};
+  ids.forEach(id => { v[id] = +document.getElementById(id).value; });
+  const spent = v.a1+v.a2+v.a3+v.a4;
+  const pct = Math.min(100, Math.round(spent/TOTAL*100));
 
-// Rural chart
-new Chart(document.getElementById("rural-chart"), {
-  type: 'doughnut',
-  data: {
-    labels: ['Rural (14.2%)', 'Urban (11.1%)'],
-    datasets: [{
-      data: [14.2, 11.1],
-      backgroundColor: ['#c0392b', '#1a7a6e'],
-      borderWidth: 0,
-    }]
-  },
-  options: {
-    ...chartDefaults,
-    cutout: '65%',
-    plugins: {
-      legend: { display: true, position:'bottom', labels:{ font:{family:'DM Sans',size:11}, padding:12 } },
-      tooltip: chartDefaults.plugins.tooltip
-    }
-  }
-});
+  // Budget bar
+  const fill = document.getElementById('budget-fill');
+  fill.style.width = pct+'%';
+  fill.classList.toggle('maxed', spent >= TOTAL);
+  document.getElementById('spent-label').textContent = '$'+spent+'M / $'+TOTAL+'M';
 
-// Education chart
-new Chart(document.getElementById("edu-chart"), {
-  type: 'bar',
-  data: {
-    labels: ['< High School', 'HS / GED', '> High School'],
-    datasets: [{
-      data: [17.5, 11.9, 9.8],
-      backgroundColor: ['#c0392b', '#e8806a', '#f5c6c2'],
-      borderRadius: 4,
-    }]
-  },
-  options: {
-    ...chartDefaults,
-    indexAxis: 'y',
-    scales: {
-      x: { beginAtZero: true, max: 20, ticks: { callback: v => v+'%', font:{family:'DM Sans',size:11} }, grid:{color:'#e8e2d8'} },
-      y: { ticks: { font:{family:'DM Sans',size:11} }, grid:{display:false} }
-    }
-  }
-});
+  // Amount labels + reach text
+  Object.keys(v).forEach(k => {
+    const iv = INTERVENTIONS[k];
+    document.getElementById(k+'amt').textContent = '$'+v[k]+'M';
+    const ppl = Math.round((v[k]/10)*iv.pplPer10M/1000);
+    document.getElementById(k+'reach').textContent = v[k] > 0 ? `Reaches ~${ppl}K people across ${Math.ceil(v[k]/15)} priority states` : '';
+  });
 
-// ── NAVIGATOR ──
-function runNavigator() {
-  const state = document.getElementById("nav-state").value;
-  const income = document.getElementById("nav-income").value;
-  const race = document.getElementById("nav-race").value;
-  const result = document.getElementById("nav-result");
+  // Live projection chart
+  const newSlope = Math.max(0, slope - Object.keys(v).reduce((s,k) => s+(v[k]/10)*INTERVENTIONS[k].slopeRed, 0)/14);
+  const fy = Array.from({length:15},(_,i)=>2021+i);
+  const base = fy.map(y=>+pred(y).toFixed(2));
+  const intv = fy.map(y=>+(10.1+newSlope*(y-2021)).toFixed(2));
+  const savedPP = +(base[14]-intv[14]).toFixed(1);
+  const savedCases = Math.round(savedPP/100*350*1000);
 
-  if (!state || !income || !race) {
-    result.className = "nav-result show";
-    result.innerHTML = "Please fill in all three fields to generate your profile.";
+  if(projChart) projChart.destroy();
+  projChart = new Chart(document.getElementById('proj-chart'), {
+    data:{labels:fy, datasets:[
+      {type:'line', label:'No investment', data:base, borderColor:'#c0392b', borderWidth:2, pointRadius:0, tension:0},
+      {type:'line', label:'With $'+spent+'M', data:intv, borderColor:'#1a7a6e', borderWidth:2.5, pointRadius:0, tension:0,
+        fill:{target:'-1', above:'rgba(26,122,110,0.08)'}}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{family:'DM Sans',size:10}}},
+        tooltip:{backgroundColor:'#1a1410',titleFont:{family:'DM Sans'},bodyFont:{family:'DM Sans'},
+          callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw}%`}}},
+      scales:{
+        y:{min:9.5,max:13.5,ticks:{callback:v=>v+'%',font:{family:'DM Sans',size:10}},grid:{color:'#f0ebe0'}},
+        x:{ticks:{font:{family:'DM Sans',size:9},maxTicksLimit:7},grid:{display:false}}
+      }}
+  });
+
+  // States list
+  updateStates(v, savedCases);
+}
+
+function updateStates(v, totalSavedCases) {
+  const list = document.getElementById('states-list');
+  const empty = document.getElementById('empty-state');
+  const summary = document.getElementById('states-summary');
+  const peopleSummary = document.getElementById('people-summary');
+
+  const spent = v.a1+v.a2+v.a3+v.a4;
+  if(spent === 0) {
+    list.innerHTML=''; empty.style.display='block';
+    summary.textContent='0 states'; peopleSummary.textContent='Allocate budget to see impact';
     return;
   }
+  empty.style.display='none';
 
-  const stateRates = {AL:13.3,MS:13.7,WV:13.0,KY:12.3,LA:12.5,SC:11.9,NC:11.1,TX:10.8,NY:10.1,IL:9.7,CA:9.3,FL:8.8,MN:7.9,CO:7.8,MT:7.6};
-  const incomeRates = {low:16.4, mid:11.0, high:7.7};
-  const raceRates = {black:15.2, white:10.6, hispanic:9.8, other:10.5};
-  const stateNames = {AL:"Alabama",MS:"Mississippi",WV:"West Virginia",KY:"Kentucky",LA:"Louisiana",SC:"South Carolina",NC:"North Carolina",TX:"Texas",NY:"New York",IL:"Illinois",CA:"California",FL:"Florida",MN:"Minnesota",CO:"Colorado",MT:"Montana"};
+  // Build state impact map
+  const stateMap = {};
+  Object.keys(v).forEach(k => {
+    if(v[k]===0) return;
+    const iv = INTERVENTIONS[k];
+    const statesCount = Math.ceil(v[k]/15);
+    iv.targets.slice(0, statesCount).forEach(state => {
+      if(!stateMap[state]) stateMap[state] = {tags:[], cases:0, ppl:0};
+      stateMap[state].tags.push({cls:iv.tag, label:iv.label});
+      stateMap[state].cases += Math.round((v[k]/10/iv.targets.length)*iv.casesPer10M);
+      stateMap[state].ppl += Math.round((v[k]/10/iv.targets.length)*iv.pplPer10M);
+    });
+  });
 
-  const sr = stateRates[state];
-  const ir = incomeRates[income];
-  const rr = raceRates[race];
-  const avg = ((sr + ir + rr) / 3).toFixed(1);
-  const national = 10.1;
-  const diff = (avg - national).toFixed(1);
-  const higher = avg > national;
+  const states = Object.entries(stateMap).sort((a,b)=>( STATE_PRIORITY[b[0]]||0)-(STATE_PRIORITY[a[0]]||0));
+  const totalPpl = Math.round(Object.values(v).reduce((s,val,i)=>s+(val/10)*Object.values(INTERVENTIONS)[i].pplPer10M,0)/1000);
+  summary.textContent = states.length+' states';
+  peopleSummary.textContent = `~${totalPpl}K people reached · ~${Math.round(totalSavedCases/1000)}K fewer cases by 2035`;
 
-  const incomeLabels = {low:"Low income (<$35K)", mid:"Middle income ($35–75K)", high:"High income ($75K+)"};
-  const raceLabels = {black:"Non-Hispanic Black", white:"Non-Hispanic White", hispanic:"Hispanic", other:"Non-Hispanic Other"};
-
-  result.className = "nav-result show";
-  result.innerHTML = `
-    <strong>Your estimated risk profile: ~${avg}%</strong><br><br>
-    Based on living in ${stateNames[state]} (${sr}%), ${incomeLabels[income]} (${ir}%), and ${raceLabels[race]} (${rr}%), your combined risk indicator is 
-    <strong style="color:${higher?'#c0392b':'#1a7a6e'}">${Math.abs(diff)}% ${higher?'above':'below'} the national average</strong> of ${national}%.<br><br>
-    ${higher ? '⚠️ <strong>Recommended actions:</strong> Annual A1C screening, dietary support programs, and local community health center check-ins are strongly advised.' : '✅ <strong>Keep it up:</strong> Continue preventive care and annual screenings to maintain your lower-risk profile.'}
-  `;
+  list.innerHTML = states.map(([state, d]) => `
+    <div class="state-impact-row">
+      <div class="state-impact-name">${state}</div>
+      <div class="state-impact-tags">${d.tags.map(t=>`<span class="state-tag ${t.cls}">${t.label}</span>`).join('')}</div>
+      <div class="state-impact-cases">-${Math.round(d.cases/1000)}K cases</div>
+    </div>`).join('');
 }
 
-// ── SCROLL ANIMATIONS ──
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (e.isIntersecting) e.target.classList.add("visible");
-  });
-}, { threshold: 0.15 });
-document.querySelectorAll(".fade-up").forEach(el => observer.observe(el));
-
-// ── PROGRESS DOTS ──
-const sections = ["hero","scale","disparity","complications","product","cta"];
-const sectionObserver = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      document.querySelectorAll(".dot").forEach(d => d.classList.remove("active"));
-      const dot = document.querySelector(`.dot[data-section="${e.target.id}"]`);
-      if (dot) dot.classList.add("active");
-      document.querySelectorAll(".nav-links a").forEach(a => {
-        a.classList.toggle("active", a.getAttribute("href") === "#"+e.target.id);
-      });
-    }
-  });
-}, { threshold: 0.5 });
-sections.forEach(id => { const el = document.getElementById(id); if(el) sectionObserver.observe(el); });
-
-function scrollToSection(id) {
-  document.getElementById(id)?.scrollIntoView({behavior:"smooth"});
+function optimizeBudget() {
+  // Optimal based on cost-effectiveness: healthcare>screening>food>activity
+  document.getElementById('a1').value=30;
+  document.getElementById('a2').value=60;
+  document.getElementById('a3').value=15;
+  document.getElementById('a4').value=45;
+  updateBudget();
 }
+updateBudget();
+
+// PRIORITY TABLE
+const PD=[{"state":"Alabama","priority_score":74.6,"prevalence":13.3},{"state":"Kentucky","priority_score":72.3,"prevalence":12.3},{"state":"Georgia","priority_score":71.0,"prevalence":11.3},{"state":"Louisiana","priority_score":70.1,"prevalence":12.4},{"state":"Tennessee","priority_score":69.0,"prevalence":12.2},{"state":"Mississippi","priority_score":67.6,"prevalence":13.7},{"state":"South Carolina","priority_score":65.4,"prevalence":11.9},{"state":"Hawaii","priority_score":64.5,"prevalence":8.1},{"state":"West Virginia","priority_score":64.0,"prevalence":13.1},{"state":"North Carolina","priority_score":62.9,"prevalence":11.1},{"state":"Oklahoma","priority_score":61.8,"prevalence":11.6},{"state":"Arizona","priority_score":61.3,"prevalence":9.7},{"state":"Ohio","priority_score":61.0,"prevalence":10.8},{"state":"Texas","priority_score":60.8,"prevalence":11.1},{"state":"California","priority_score":59.5,"prevalence":10.9},{"state":"Missouri","priority_score":58.9,"prevalence":9.9},{"state":"Indiana","priority_score":58.7,"prevalence":10.8},{"state":"Virginia","priority_score":58.5,"prevalence":10.2},{"state":"Illinois","priority_score":58.5,"prevalence":9.7},{"state":"Pennsylvania","priority_score":57.8,"prevalence":9.5},{"state":"Delaware","priority_score":57.7,"prevalence":10.0},{"state":"Michigan","priority_score":54.2,"prevalence":9.3},{"state":"Nevada","priority_score":54.1,"prevalence":10.2},{"state":"South Dakota","priority_score":52.7,"prevalence":9.6},{"state":"Minnesota","priority_score":52.4,"prevalence":7.9},{"state":"Arkansas","priority_score":51.9,"prevalence":10.8},{"state":"Wisconsin","priority_score":51.2,"prevalence":7.9},{"state":"North Dakota","priority_score":50.8,"prevalence":8.8},{"state":"Kansas","priority_score":50.0,"prevalence":10.0},{"state":"Rhode Island","priority_score":49.7,"prevalence":9.2},{"state":"Florida","priority_score":48.5,"prevalence":8.8},{"state":"New York","priority_score":48.3,"prevalence":10.1},{"state":"Maryland","priority_score":48.1,"prevalence":9.8},{"state":"Iowa","priority_score":45.5,"prevalence":8.6},{"state":"Connecticut","priority_score":45.4,"prevalence":9.3},{"state":"Oregon","priority_score":44.7,"prevalence":8.4},{"state":"Massachusetts","priority_score":43.1,"prevalence":7.8},{"state":"New Mexico","priority_score":42.3,"prevalence":11.8},{"state":"New Jersey","priority_score":40.8,"prevalence":8.7},{"state":"New Hampshire","priority_score":40.4,"prevalence":7.3},{"state":"Maine","priority_score":39.4,"prevalence":8.2},{"state":"Idaho","priority_score":38.9,"prevalence":8.8},{"state":"Nebraska","priority_score":38.8,"prevalence":8.6},{"state":"Utah","priority_score":36.3,"prevalence":8.2},{"state":"Washington","priority_score":30.8,"prevalence":7.9},{"state":"Vermont","priority_score":28.3,"prevalence":7.1},{"state":"Alaska","priority_score":27.4,"prevalence":8.0},{"state":"Colorado","priority_score":26.9,"prevalence":6.5},{"state":"Montana","priority_score":25.5,"prevalence":7.6},{"state":"Wyoming","priority_score":19.4,"prevalence":7.6}];
+
+// NAVIGATOR
+function runNavigator() {
+  const state = document.getElementById('nav-state').value;
+  const income = document.getElementById('nav-income').value;
+  const race = document.getElementById('nav-race').value;
+  const result = document.getElementById('nav-result');
+  if(!state||!income||!race){result.className='nav-result show';result.innerHTML='Please fill in all three fields.';return;}
+  const sr={AL:13.3,MS:13.7,WV:13.0,KY:12.3,LA:12.5,SC:11.9,NC:11.1,TX:10.8,NY:10.1,IL:9.7,CA:9.3,FL:8.8,MN:7.9,CO:7.8,MT:7.6};
+  const ir={low:16.4,mid:11.0,high:7.7};
+  const rr={black:15.2,white:10.6,hispanic:9.8,other:10.5};
+  const sn={AL:'Alabama',MS:'Mississippi',WV:'West Virginia',KY:'Kentucky',LA:'Louisiana',SC:'South Carolina',NC:'North Carolina',TX:'Texas',NY:'New York',IL:'Illinois',CA:'California',FL:'Florida',MN:'Minnesota',CO:'Colorado',MT:'Montana'};
+  const il={low:'Low income (<$35K)',mid:'Middle income ($35–75K)',high:'High income ($75K+)'};
+  const rl={black:'Non-Hispanic Black',white:'Non-Hispanic White',hispanic:'Hispanic',other:'Non-Hispanic Other'};
+  const avg=+((sr[state]+ir[income]+rr[race])/3).toFixed(1);
+  const diff=+(avg-10.1).toFixed(1);
+  const higher=avg>10.1;
+  result.className='nav-result show';
+  result.innerHTML=`<strong>Your estimated risk profile: ~${avg}%</strong><br><br>
+    Based on living in ${sn[state]} (${sr[state]}%), ${il[income]} (${ir[income]}%), and ${rl[race]} (${rr[race]}%), your combined risk indicator is
+    <strong style="color:${higher?'#c0392b':'#1a7a6e'}">${Math.abs(diff)}% ${higher?'above':'below'} the national average</strong> of 10.1%.<br><br>
+    ${higher?'⚠️ <strong>Recommended actions:</strong> Annual A1C screening, dietary support programs, and local community health center check-ins are strongly advised.':'✅ <strong>Keep it up:</strong> Continue preventive care and annual screenings to maintain your lower-risk profile.'}`;
+}
+
+// SCROLL & NAV
+const obs=new IntersectionObserver(e=>e.forEach(en=>{if(en.isIntersecting)en.target.classList.add('in');}),{threshold:.12});
+document.querySelectorAll('.fade').forEach(el=>obs.observe(el));
+const secs=['hero','problem','scale','forecast','solution','cta'];
+const dots=document.querySelectorAll('.pdot');
+const secObs=new IntersectionObserver(e=>e.forEach(en=>{
+  if(en.isIntersecting){
+    const i=secs.indexOf(en.target.id);
+    dots.forEach((d,j)=>d.classList.toggle('active',i===j));
+    document.querySelectorAll('.nav-pill').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+en.target.id));
+  }
+}),{threshold:.4});
+secs.forEach(id=>{const el=document.getElementById(id);if(el)secObs.observe(el);});
+function goto(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth'});}
 </script>
 </body>
 </html>
